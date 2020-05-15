@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:text="Bayesian Locator"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:textSize="30sp" />
+    
+    <TextView
+        android:id="@+id/location_text_view"
+        android:paddingTop="50dp"
+        android:paddingBottom="50dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cell Undetermined"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textColor="@color/colorAccent"
+        android:textSize="40sp"/>
+
+    <TextView
+        android:id="@+id/feedback_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="200sp"
+        android:text=""
+        android:textAlignment="viewStart"
+        android:textStyle="bold"
+        android:textColor="@color/colorLightGray"
+        android:layout_marginLeft="20sp"
+        android:layout_marginRight="20sp"
+        android:textSize="8sp"/>
+
+    <TextView
+        android:id="@+id/scancount_text_view"
+        android:layout_width="match_parent"
+        android:scrollbars="vertical"
+        android:layout_height="wrap_content"
+        android:text="Scan Count: 19/20"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textColor="@color/colorLightGray"
+        android:textSize="18sp"/>
+
+    <Button
+        android:id="@+id/locate_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15sp"
+        android:enabled="true"
+        android:text="Locate Me"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+
+</LinearLayout>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/settings_particle_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:padding="10dp"
+        android:text="Particle Filter Settings"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/particle_adjust"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/settings_particle_textview"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="Step Adjust"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/particle_adjust_down_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Down" />
+
+        <TextView
+            android:id="@+id/particle_adjust_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="3.0"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/particle_adjust_up_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="Up" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/database_block"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/particle_adjust"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Database Settings"
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Train No."
+                android:textAlignment="center"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/iter_adjust_down_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="Down" />
+
+            <TextView
+                android:id="@+id/iter_adjust_textview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="3.0"
+                android:textSize="18sp" />
+
+            <Button
+                android:id="@+id/iter_adjust_up_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="Up" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/load_db_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:text="Load from Database" />
+
+        <Button
+            android:id="@+id/save_db_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:text="Save to Database" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <Switch
+                android:id="@+id/wipe_db_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp" />
+
+            <Button
+                android:id="@+id/wipe_db_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorAccent"
+                android:padding="16dp"
+                android:text="Wipe Database" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/export_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/database_block"
+        android:layout_alignParentRight="true"
+        android:layout_margin="6dp"
+        android:text="Export WiFi Data" />
+
+    <Button
+        android:id="@+id/import_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/export_button"
+        android:layout_margin="6dp"
+        android:text="Import WiFi Data" />
+
+
+    <TextView
+        android:id="@+id/io_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:layout_below="@id/import_button"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:scrollbars="vertical"
+        android:text="Status text will appear here"
+        android:textAlignment="textStart"
+        android:textSize="10sp" />
+</RelativeLayout>
