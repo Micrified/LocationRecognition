@@ -3,9 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
     <group android:checkableBehavior="single">
-        <item android:id="@+id/nav_particle"
-            android:icon="@drawable/ic_particle"
-            android:title="Particle Filter"/>
         <item android:id="@+id/nav_lieu"
             android:icon="@drawable/ic_lieu"
             android:title="Bayesian Locater"/>

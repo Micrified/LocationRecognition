@@ -105,9 +105,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         // Otherwise change the fragment
         switch (fragment_id) {
-            case R.id.nav_particle:
-                currentFragment = new ParticleFragment();
-                break;
 
             case R.id.nav_lieu:
                 currentFragment = new LieuFragment();
