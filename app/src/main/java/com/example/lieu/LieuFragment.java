@@ -148,7 +148,7 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
         g_current_scan_rounds = 0;
 
         // Setup the round-count text view text
-        String roundCountText = String.format("Scan Count: %2d/%2d", g_current_scan_rounds, g_max_scan_rounds);
+        String roundCountText = String.format("Scan Count: %3d/%3d", g_current_scan_rounds, g_max_scan_rounds);
         this.roundCountTextView.setText(roundCountText);
 
         // Setup the chosen cell text
@@ -246,10 +246,11 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
 
                 final ArrayList<ScanResult> filtered = new ArrayList<ScanResult>();
                 for (ScanResult result : results) {
-                    if (result.SSID.equals("eduroam") || result.SSID.equals("tudelft-dastud") ||
-                            result.SSID.equals("TUVisitor")) {
-                        filtered.add(result);
-                    }
+                    filtered.add(result);
+//                    if (result.SSID.equals("eduroam") || result.SSID.equals("tudelft-dastud") ||
+//                            result.SSID.equals("TUVisitor")) {
+//                        filtered.add(result);
+//                    }
                 }
 
                 //ArrayList<ScanResult> sample = new ArrayList<ScanResult>(results.size());
