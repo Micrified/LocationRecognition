@@ -244,13 +244,10 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                     return;
                 }
 
-                final ArrayList<ScanResult> filtered = new ArrayList<ScanResult>();
-                for (ScanResult result : results) {
-                    if (result.SSID.equals("eduroam") || result.SSID.equals("tudelft-dastud") ||
-                            result.SSID.equals("TUVisitor")) {
-                        filtered.add(result);
-                    }
-                }
+                //filter method
+                ArrayList unfiltered = new ArrayList<ScanResult>();
+                unfiltered.addAll(results);
+                final ArrayList<ScanResult> filtered = APFilter.FilterScanResults(unfiltered);
 
                 //ArrayList<ScanResult> sample = new ArrayList<ScanResult>(results.size());
                 //sample.addAll(results);
