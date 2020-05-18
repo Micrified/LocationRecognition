@@ -84,6 +84,12 @@ public class DataManager implements Serializable {
         this.filter = filter;
     }
 
+    // Getter for the filter
+    public HashMap<String, FilterDataItem> getFilter ()
+    {
+        return this.filter;
+    }
+
     // Returns true if the filter contains the given BSSID
     private boolean filterContains (String bssid)
     {

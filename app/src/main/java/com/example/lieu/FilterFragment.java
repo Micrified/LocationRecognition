@@ -24,6 +24,7 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FilterFragment extends Fragment implements OnCellFilterItemClickListener, Swap, View.OnClickListener {
 
@@ -75,10 +76,14 @@ public class FilterFragment extends Fragment implements OnCellFilterItemClickLis
         this.wifi_filtered_data_items_hashmap = new HashMap<>();
         this.wifi_nonfiltered_data_items_hashmap = new HashMap<>();
 
-        // TODO:
-        // Load contents into the hashmap - the arrays will update in onViewCreated
-
-
+        // Fill hashmap
+        HashMap<String, FilterDataItem> map = DataManager.getInstance().getFilter();
+        for (Map.Entry<String, FilterDataItem> entry : map.entrySet()) {
+            String bssid_copy = new String(entry.getKey());
+            FilterDataItem item_copy = new FilterDataItem(entry.getValue().getBSSID(),
+                    entry.getValue().getSSID(), entry.getValue().getFiltered());
+            this.wifi_filtered_data_items_hashmap.put(bssid_copy, item_copy);
+        }
 
         return inflater.inflate(R.layout.fragment_filter, container, false);
     }

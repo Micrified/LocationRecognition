@@ -245,7 +245,9 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                 }
 
                 // Apply automatic filter
-                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(new ArrayList<ScanResult>().addAll(results));
+                ArrayList<ScanResult> pre_pre_filtered = new ArrayList<ScanResult>();
+                pre_pre_filtered.addAll(results);
+                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(pre_pre_filtered);
   
                 // Apply manual filter
                 final ArrayList<ScanResult> filtered =
