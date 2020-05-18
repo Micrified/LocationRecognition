@@ -20,6 +20,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import static java.security.AccessController.getContext;
@@ -32,6 +33,9 @@ public class DataManager implements Serializable {
 
     // The WiFi manager
     transient private WifiManager wifiManager;
+
+    // The list of access-points to filter
+    transient private HashMap<String, FilterDataItem> filter;
 
     // The number of cells that the application can identify
     private int cellCount = 8;
@@ -59,6 +63,9 @@ public class DataManager implements Serializable {
         // Initialize the cell array
         this.cells = new ArrayList<Cell>();
 
+        // Initialize the filtered access point array
+        this.filter = new HashMap<String, FilterDataItem>();
+
         // Compute the prior
         double prior = 1.0 / (double)this.cellCount;
 
@@ -68,6 +75,38 @@ public class DataManager implements Serializable {
             newCell.setPrior(prior);
             this.cells.add(newCell);
         }
+    }
+
+
+    // Sets the filter
+    public void setAccessPointFilter (HashMap<String, FilterDataItem> filter)
+    {
+        this.filter = filter;
+    }
+
+    // Returns true if the filter contains the given BSSID
+    private boolean filterContains (String bssid)
+    {
+        // Null pointer check
+        if (filter == null) {
+            Log.e("FILTER", "No filter has been set!");
+            return false;
+        }
+
+        // Check if the item is in the hashmap
+        return this.filter.containsKey(bssid);
+    }
+
+    // Returns an array of scanresults that have been filtered by the filter
+    public ArrayList<ScanResult> getFilteredScanResults (List<ScanResult> scanResults)
+    {
+        ArrayList <ScanResult> filtered_results = new ArrayList<ScanResult>();
+        for (ScanResult r : scanResults) {
+            if (filterContains(r.BSSID) == false) {
+                filtered_results.add(r);
+            }
+        }
+        return filtered_results;
     }
 
     // Resets all cells
@@ -285,86 +324,6 @@ public class DataManager implements Serializable {
         delegate.updateScanCountAndReset();
 
     }
-
-    // Update all priors
-//    public void processWiFiSample (ArrayList<ScanResult> results, ScanUpdateInterface delegate)
-//    {
-//        System.out.printf("ProcessWiFiSample()\n");
-//        ArrayList<Cell> candidates = new ArrayList<Cell>();
-//
-//        // Sort results
-//        results = quickSort(results);
-//
-//        // Determine how many results to use
-//        int n = results.size();
-//        if (n > 5) {
-//            n = 5;
-//        }
-//
-//        // For all cells
-//        for (Cell c : this.getCells()) {
-//            boolean atLeastOne = false;
-//            double cell_posterior = 0.0;
-//            int count = 0;
-//
-//            // For each access point in the results
-//            for (int i = 0; i < n; ++i) {
-//                ScanResult result = results.get(i);
-//
-//                // If cell doesn't have access - point, skip it
-//                if (c.containsBSSID(result.BSSID) == false) {
-//                    continue;
-//                }
-//
-//                // Otherwise, there is at least one
-//                atLeastOne = true;
-//                count++;
-//
-//                // Update the posterior
-//                double acc = c.posterior(result.BSSID, result.level);
-//                cell_posterior += acc;
-//            }
-//
-//            // Only save + update posterior if it had at least one access-point
-//            if (atLeastOne) {
-//                c.setPrior(cell_posterior / (double)count);
-//                candidates.add(c);
-//            }
-//        }
-//
-//        // Normalize the cell priors
-//        double norm = 0.0;
-//        for (Cell c : this.getCells()) {
-//            norm += c.getPrior();
-//        }
-//        double sum = 0.0;
-//
-//        // Find the cell with the highest prior
-//        int highest_cell_id = 0;
-//
-//        for (Cell c : this.getCells()) {
-//            c.setPrior(c.getPrior() / norm);
-//            if (c.getPrior() > this.getCells().get(highest_cell_id).getPrior()) {
-//                highest_cell_id = c.getID();
-//            }
-//            sum += c.getPrior();
-//            //System.out.printf("Cell %s | Prior = %.16f\n", c.getID() + 1, c.getPrior());
-//            String s = String.format("Cell %d | Prior = %.16f\n", c.getID() + 1, c.getPrior());
-//            delegate.updateIOStatusWithString(s);
-//        }
-//
-//        // Update the current best cell
-//        delegate.setBestCandidateCell(highest_cell_id);
-//
-//        // Add to output some scan result information
-//        String s = String.format("Sum of all priors = %.16f\n", sum);
-//        delegate.updateIOStatusWithString(s);
-//
-//        // Update the number of rounds completed so far
-//        delegate.updateScanCountAndReset();
-//
-//    }
-
 
     // Returns the particle adjustment component
     public double getParticleAdjustmentComponent () {

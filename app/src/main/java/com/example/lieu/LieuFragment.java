@@ -244,17 +244,11 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                     return;
                 }
 
-                final ArrayList<ScanResult> filtered = new ArrayList<ScanResult>();
-                for (ScanResult result : results) {
-                    filtered.add(result);
-//                    if (result.SSID.equals("eduroam") || result.SSID.equals("tudelft-dastud") ||
-//                            result.SSID.equals("TUVisitor")) {
-//                        filtered.add(result);
-//                    }
-                }
+                // Filter results
+                final ArrayList<ScanResult> filtered =
+                        DataManager.getInstance().getFilteredScanResults(results);
 
-                //ArrayList<ScanResult> sample = new ArrayList<ScanResult>(results.size());
-                //sample.addAll(results);
+                // Update
                 DataManager.getInstance().processWiFiSample(filtered, LieuFragment.this);
             }
         };
