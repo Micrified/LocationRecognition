@@ -248,12 +248,13 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                 // Get a reference to a cell
                 final Cell cell = DataManager.getInstance().getCells().get(cell_index);
 
-                // Filter the results for only accepted SSIDs
+                // Apply automatic filter
+                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(new ArrayList<ScanResult>().addAll(results));
+  
+                // Apply manual filter
+                final ArrayList<ScanResult> filtered =
+                        DataManager.getInstance().getFilteredScanResults(pre_filtered);
 
-                //filter method
-                ArrayList unfiltered = new ArrayList<ScanResult>();
-                unfiltered.addAll(results);
-                final ArrayList<ScanResult> filtered = APFilter.FilterScanResults(unfiltered);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -261,8 +262,6 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                         TrainFragment.addDataToCellIndex(cell_index, filtered);
                     }
                 });
-
-
             }
         };
 

@@ -148,7 +148,7 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
         g_current_scan_rounds = 0;
 
         // Setup the round-count text view text
-        String roundCountText = String.format("Scan Count: %2d/%2d", g_current_scan_rounds, g_max_scan_rounds);
+        String roundCountText = String.format("Scan Count: %3d/%3d", g_current_scan_rounds, g_max_scan_rounds);
         this.roundCountTextView.setText(roundCountText);
 
         // Setup the chosen cell text
@@ -244,13 +244,14 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                     return;
                 }
 
-                //filter method
-                ArrayList unfiltered = new ArrayList<ScanResult>();
-                unfiltered.addAll(results);
-                final ArrayList<ScanResult> filtered = APFilter.FilterScanResults(unfiltered);
-
-                //ArrayList<ScanResult> sample = new ArrayList<ScanResult>(results.size());
-                //sample.addAll(results);
+                // Apply automatic filter
+                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(new ArrayList<ScanResult>().addAll(results));
+  
+                // Apply manual filter
+                final ArrayList<ScanResult> filtered =
+                        DataManager.getInstance().getFilteredScanResults(pre_filtered);
+              
+                // Update
                 DataManager.getInstance().processWiFiSample(filtered, LieuFragment.this);
             }
         };
