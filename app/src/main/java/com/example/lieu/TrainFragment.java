@@ -248,9 +248,13 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                 // Get a reference to a cell
                 final Cell cell = DataManager.getInstance().getCells().get(cell_index);
 
-                // Filter results
+                // Apply automatic filter
+                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(new ArrayList<ScanResult>().addAll(results));
+  
+                // Apply manual filter
                 final ArrayList<ScanResult> filtered =
-                        DataManager.getInstance().getFilteredScanResults(results);
+                        DataManager.getInstance().getFilteredScanResults(pre_filtered);
+
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
