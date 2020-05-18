@@ -248,22 +248,9 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                 // Get a reference to a cell
                 final Cell cell = DataManager.getInstance().getCells().get(cell_index);
 
-                // Filter the results for only accepted SSIDs
-                final ArrayList<ScanResult> filtered = new ArrayList<ScanResult>();
-                for (ScanResult result : results) {
-                    if (result.SSID.equals("eduroam") || result.SSID.equals("tudelft-dastud") ||
-                            result.SSID.equals("TUVisitor")) {
-                        filtered.add(result);
-                    } else {
-                        filtered.add(result);
-                    }
-
-                    // ************* COMMENT THIS IN TO ENABLE EVERYTHING TO BE COLLECTED *********
-                    /* else {
-                        filtered.add(result);
-                    } */
-
-                }
+                // Filter results
+                final ArrayList<ScanResult> filtered =
+                        DataManager.getInstance().getFilteredScanResults(results);
 
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
@@ -271,8 +258,6 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                         TrainFragment.addDataToCellIndex(cell_index, filtered);
                     }
                 });
-
-
             }
         };
 
