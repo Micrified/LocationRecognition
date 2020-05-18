@@ -7,32 +7,52 @@ import java.util.ArrayList;
 public class APFilter {
     public static ArrayList<ScanResult> FilterScanResults(ArrayList<ScanResult> unfiltered)
     {
+        ArrayList<ScanResult> toRemove = new ArrayList<ScanResult>();
+
         //SSIDs, if any part matches remove it
         for (ScanResult s : unfiltered)
         {
-            for(int i = 0; i < SSID_Identifiers[1].length; i++)
+            System.out.println(s.SSID);
+            for(int i = 0; i < SSID_Identifiers.length; i++)
             {
-                System.out.println(s.SSID);
-                if(s.SSID.contains(SSID_Identifiers[1][i]))
+                System.out.println(SSID_Identifiers[i][1]);
+                if(s.SSID.toLowerCase().contains(SSID_Identifiers[i][1].toLowerCase()))
                 {
                     //if match
-                    unfiltered.remove(s);
+                    toRemove.add(s);
                 }
             }
+        }
+
+        if(toRemove.size() != 0)
+        {
+            for (ScanResult r : toRemove)
+            {
+                unfiltered.remove(r);
+            }
+            toRemove.clear();
         }
 
         //BSSIDs, only match the first half for filtering
         for (ScanResult s : unfiltered)
         {
-            for(int i = 0; i < BSSID_Identifiers[1].length; i++)
+            System.out.println(s.BSSID.substring(0, 7));
+            for(int i = 0; i < BSSID_Identifiers.length; i++)
             {
-                System.out.println(s.BSSID.substring(0, 7));
-                if(s.BSSID.substring(0, 7) == BSSID_Identifiers[1][i])
+                if(s.BSSID.substring(0, 7) == BSSID_Identifiers[i][1])
                 {
                     System.out.println(s.BSSID.substring(0, 7));
                     //if match
-                    unfiltered.remove(s);
+                    toRemove.add(s);
                 }
+            }
+        }
+
+        if(toRemove.size() != 0)
+        {
+            for (ScanResult r : toRemove)
+            {
+                unfiltered.remove(r);
             }
         }
 
@@ -106,7 +126,6 @@ public class APFilter {
             {"Sony devices", "XPERIA"},
             {"xperia tablet", "androidhotspot"},
             {"HP laptops", "HP envy"},
-            {"empty ssid (not really hidden, just not broadcasting..)", ""},
 
 
             // some ssids from our friends at https://github.com/dougt/MozStumbler
