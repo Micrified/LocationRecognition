@@ -34,8 +34,11 @@ public class DataManager implements Serializable {
     // The WiFi manager
     transient private WifiManager wifiManager;
 
-    // The list of access-points to filter
+    // The list of access-points to filter manually
     transient private HashMap<String, FilterDataItem> filter;
+
+    // The list of access-points to check for duplicates against
+    transient private HashMap<String, FilterDataItem> duplicate_filter;
 
     // The number of cells that the application can identify
     private int cellCount = 8;
@@ -65,6 +68,9 @@ public class DataManager implements Serializable {
 
         // Initialize the filtered access point array
         this.filter = new HashMap<String, FilterDataItem>();
+
+        // Initialize the duplicate filter
+        this.duplicate_filter = new HashMap<String, FilterDataItem>();
 
         // Compute the prior
         double prior = 1.0 / (double)this.cellCount;
@@ -103,16 +109,58 @@ public class DataManager implements Serializable {
         return this.filter.containsKey(bssid);
     }
 
+    // Returns true if there exists a duplicate to this AP
+    private boolean duplicateFilterContains (String bssid)
+    {
+
+        // Remove last three bytes of the BSSID
+        String hash_bssid = bssid.substring(0, bssid.length() - 3);
+
+        // Check if this hash exists in the duplicate table
+        return (duplicate_filter.containsKey(hash_bssid));
+    }
+
+    // Registers an AP with the duplicate filter
+    private void registerDuplicateAP (ScanResult ap)
+    {
+        // Remove last three bytes of the BSSID
+        String hash_bssid = ap.BSSID.substring(0, ap.BSSID.length() - 3);
+
+        // Register a new item
+        FilterDataItem item = new FilterDataItem(ap.BSSID, ap.SSID, false);
+
+        duplicate_filter.put(hash_bssid, item);
+    }
+
     // Returns an array of scanresults that have been filtered by the filter
     public ArrayList<ScanResult> getFilteredScanResults (List<ScanResult> scanResults)
     {
-        ArrayList <ScanResult> filtered_results = new ArrayList<ScanResult>();
-        for (ScanResult r : scanResults) {
+        ArrayList<ScanResult> scan_results_array = new ArrayList();
+        scan_results_array.addAll(scanResults);
+
+        // Layer 1: Automatic detection and removal
+        ArrayList<ScanResult> filtered_1 = APFilter.FilterScanResults(scan_results_array);
+
+        // Layer 2: Manual removal
+        ArrayList<ScanResult> filtered_2 = new ArrayList<ScanResult>();
+        for (ScanResult r : filtered_1) {
             if (filterContains(r.BSSID) == false) {
-                filtered_results.add(r);
+                filtered_2.add(r);
             }
         }
-        return filtered_results;
+
+        // Layer 3: Removal of duplicate access-point instances
+        ArrayList<ScanResult> filtered_3 = new ArrayList<ScanResult>();
+        for (ScanResult r : filtered_2) {
+            if (duplicateFilterContains(r.BSSID)) {
+                continue;
+            } else {
+                filtered_3.add(r);
+                registerDuplicateAP(r);
+            }
+        }
+
+        return filtered_3;
     }
 
     // Resets all cells
