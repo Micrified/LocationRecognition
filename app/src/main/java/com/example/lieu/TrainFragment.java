@@ -251,7 +251,7 @@ public class TrainFragment extends Fragment implements View.OnClickListener, Swa
                 // Apply manual filter
                 final ArrayList<ScanResult> filtered =
                         DataManager.getInstance().getFilteredScanResults(results);
-                
+
                 new Handler(Looper.getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
