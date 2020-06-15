@@ -270,14 +270,9 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                     return;
                 }
 
-                // Apply automatic filter
-                ArrayList<ScanResult> pre_pre_filtered = new ArrayList<ScanResult>();
-                pre_pre_filtered.addAll(results);
-                ArrayList<ScanResult> pre_filtered = APFilter.FilterScanResults(pre_pre_filtered);
-  
-                // Apply manual filter
+                // Apply all filters
                 final ArrayList<ScanResult> filtered =
-                        DataManager.getInstance().getFilteredScanResults(pre_filtered);
+                        DataManager.getInstance().getFilteredScanResults(results);
               
                 // Update
                 DataManager.getInstance().processWiFiSample(filtered, LieuFragment.this);

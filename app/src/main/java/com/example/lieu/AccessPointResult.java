@@ -126,7 +126,7 @@ public class AccessPointResult implements Serializable {
 
     // Writes the AccessPointResult to an output stream writer
     public void export (OutputStreamWriter writer) {
-        String format = this.getBssid() + " " + this.getSsid();
+        String format = this.getBssid() + " " + "\"" + this.getSsid() + "\"";
         for (Double d : this.samples) {
             String segment = String.format(" %f", d);
             format = format + segment;

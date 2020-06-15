@@ -70,20 +70,25 @@ public class Cell implements Serializable {
     // TODO: Method to get all unique access-points (BSSIDs) in a given sample set
     private ArrayList<String> getUniqueAccessPoints () {
         ArrayList<String> unique_bssids = new ArrayList<String>();
-        HashSet<String> set = new HashSet<String>();
+        HashMap<String, ScanResult> set = new HashMap<String, ScanResult>();
 
 
         for (ArrayList<ScanResult> scan : this.samples) {
             for (ScanResult result : scan) {
-                set.add(result.BSSID);
+
+                // Drop the last three bytes of the BSSID in order to weed out duplicates
+                String hash_bssid = result.BSSID.substring(0, result.BSSID.length() - 3);
+
+                // Only put the first occurrence
+                if (set.containsKey(hash_bssid) == false) {
+                    set.put(hash_bssid, result);
+                }
             }
         }
 
-        // Collect all keys
-        Iterator iterator = set.iterator();
-
-        while (iterator.hasNext()) {
-            unique_bssids.add((String)iterator.next());
+        // Collect all unique BSSIDs by getting all values and then the full BSSIDs
+        for (ScanResult r : set.values()) {
+            unique_bssids.add(r.BSSID);
         }
 
         return unique_bssids;

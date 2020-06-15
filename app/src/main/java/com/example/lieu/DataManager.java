@@ -34,7 +34,7 @@ public class DataManager implements Serializable {
     // The WiFi manager
     transient private WifiManager wifiManager;
 
-    // The list of access-points to filter
+    // The list of access-points to filter manually
     transient private HashMap<String, FilterDataItem> filter;
 
     // The number of cells that the application can identify
@@ -106,13 +106,21 @@ public class DataManager implements Serializable {
     // Returns an array of scanresults that have been filtered by the filter
     public ArrayList<ScanResult> getFilteredScanResults (List<ScanResult> scanResults)
     {
-        ArrayList <ScanResult> filtered_results = new ArrayList<ScanResult>();
-        for (ScanResult r : scanResults) {
+        ArrayList<ScanResult> scan_results_array = new ArrayList();
+        scan_results_array.addAll(scanResults);
+
+        // Layer 1: Automatic detection and removal
+        ArrayList<ScanResult> filtered_1 = APFilter.FilterScanResults(scan_results_array);
+
+        // Layer 2: Manual removal
+        ArrayList<ScanResult> filtered_2 = new ArrayList<ScanResult>();
+        for (ScanResult r : filtered_1) {
             if (filterContains(r.BSSID) == false) {
-                filtered_results.add(r);
+                filtered_2.add(r);
             }
         }
-        return filtered_results;
+
+        return filtered_2;
     }
 
     // Resets all cells
