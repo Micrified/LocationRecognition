@@ -1,6 +1,10 @@
 package com.example.lieu;
 
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -14,6 +18,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,7 +28,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, StepListener, SensorEventListener {
 
     // The navigation drawer
     private DrawerLayout drawer;
@@ -34,10 +39,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     // ID of current fragment shown
     private int currentFragmentID;
 
+    private SimpleStepDetector simpleStepDetector;
+    private SensorManager sensorManager;
+    private Sensor accel;
+    private static final String TEXT_NUM_STEPS = "Number of Steps: ";
+    public static int numSteps;
+    public static int height = 175;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Get an instance of the SensorManager
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new SimpleStepDetector();
+        simpleStepDetector.registerListener(this);
 
         // Initialize the DataManager Singleton
         DataManager dataManager = DataManager.getInstance();
@@ -158,5 +176,37 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        numSteps = 0;
+        //textView.setText(TEXT_NUM_STEPS + numSteps);
+        sensorManager.registerListener(this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            simpleStepDetector.updateAccel(
+                    event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
+    }
+
+    @Override
+    public void step(long timeNs) {
+        numSteps++;
+        //textView.setText(TEXT_NUM_STEPS + numSteps);
+        LieuFragment.UpdateSteps(numSteps);
+    }
 
 }

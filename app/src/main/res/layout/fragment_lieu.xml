@@ -58,5 +58,15 @@
         android:text="Locate Me"
         android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
+    <TextView
+        android:id="@+id/steps_text_view"
+        android:layout_width="match_parent"
+        android:scrollbars="vertical"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAlignment="center"
+        android:textStyle="bold"
+        android:textColor="@color/colorLightGray"
+        android:textSize="18sp"/>
 
 </LinearLayout>

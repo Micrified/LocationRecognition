@@ -51,6 +51,8 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
     // TextView for displaying the number of rounds thus completed in locating
     TextView roundCountTextView;
 
+    public static TextView stepsTextView = null;
+
     // The global data lock
     private ReentrantLock lock;
 
@@ -86,6 +88,9 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
         this.chosenOneTextView = getView().findViewById(R.id.location_text_view);
         this.feedbackTextView = getView().findViewById(R.id.feedback_text_view);
         this.roundCountTextView = getView().findViewById(R.id.scancount_text_view);
+
+
+        this.stepsTextView = getView().findViewById(R.id.steps_text_view);
 
         // Make feedback scrollable
         feedbackTextView.setMovementMethod(new ScrollingMovementMethod());
@@ -181,6 +186,7 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
 
                 break;
         }
+
     }
 
 
@@ -206,6 +212,8 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
         });
     }
 
+
+
     // Allow the number of scans to be updated
     public void updateScanCountAndReset () {
         getActivity().runOnUiThread(new Runnable(){
@@ -222,6 +230,24 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
         });
     }
 
+
+    public static void UpdateSteps(final int steps)
+    {
+        if(stepsTextView != null)
+        {
+            new Handler(Looper.getMainLooper()).post(new Runnable ()
+            {
+                @Override
+                public void run ()
+                {
+                    System.out.println("Steps: " + steps);
+                    stepsTextView.setText("Steps: " + steps + " Distance: " + steps*(((float) MainActivity.height/100)*0.413f));
+                }
+            });
+        }
+        else
+            return;
+    }
 
     public void scanWiFi () {
 

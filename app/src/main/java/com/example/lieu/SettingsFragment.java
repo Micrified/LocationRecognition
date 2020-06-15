@@ -21,8 +21,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -61,6 +63,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private TextView textView;
 
+    private EditText heightText;
+
 
     // Database views
 
@@ -70,6 +74,7 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
     private Button loadDBButton;
     private Button saveDBButton;
     private Button wipeDBButton;
+    private Button heightButton;
     private Switch wipeDBSwitch;
 
     // Database global version
@@ -100,6 +105,9 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         this.iterDownButton = getView().findViewById(R.id.iter_adjust_down_button);
         this.iterDownButton.setOnClickListener(this);
         this.iterTextView = getView().findViewById(R.id.iter_adjust_textview);
+        this.heightText = getView().findViewById(R.id.height_number);
+        this.heightButton = getView().findViewById(R.id.save_height);
+        this.heightButton.setOnClickListener(this);
 
         this.loadDBButton = getView().findViewById(R.id.load_db_button);
         this.loadDBButton.setOnClickListener(this);
@@ -169,6 +177,11 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         this.iterTextView.setText(String.format("%d", g_training_version));
     }
 
+    private void saveHeight()
+    {
+        MainActivity.height = Integer.parseInt(heightText.getText().toString());
+    }
+
     @Override
     public void onClick(View v) {
 
@@ -228,6 +241,12 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
             case R.id.import_button:
                 System.out.println("Button: Import");
                 this.importCellData();
+                break;
+
+            case R.id.save_height:
+                System.out.println("Button: Height");
+                this.saveHeight();
+                this.showSuccessPopup("Height Saved!");
                 break;
         }
     }

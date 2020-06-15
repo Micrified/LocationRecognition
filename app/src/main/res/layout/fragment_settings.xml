@@ -17,10 +17,16 @@
         android:textStyle="bold" />
 
     <LinearLayout
-        android:id="@+id/particle_adjust"
+        android:id="@+id/adjusts"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/settings_particle_textview"
+        android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/particle_adjust"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="horizontal">
 
         <TextView
@@ -59,10 +65,53 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/height_adjust"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="Height Adjust"
+            android:textSize="18sp" />
+
+        <EditText
+            android:id="@+id/height_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:text="175"
+            android:inputType="number"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="2dp"
+            android:paddingRight="8dp"
+            android:text="cm"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/save_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:text="save" />
+
+    </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
         android:id="@+id/database_block"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/particle_adjust"
+        android:layout_below="@+id/adjusts"
         android:orientation="vertical">
 
         <TextView
