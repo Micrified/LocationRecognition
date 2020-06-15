@@ -43,14 +43,13 @@ import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ParticleFragment extends Fragment implements View.OnClickListener, SensorEventListener, Swap {
+public class ParticleFragment extends Fragment implements View.OnClickListener, SensorEventListener, Swap, StepListener {
 
     // The reset button
     private Button resetButton;
 
     // The step button
     private Button stepButton;
-
 
     // The surface view holding the canvas
     private ImageView canvasView;
@@ -86,7 +85,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     private Sensor gyroscope;
 
     // The step-detector
-    private Sensor stepDetector;
+    //private Sensor stepDetector;
+    private SimpleStepDetector simpleStepDetector;
 
     // The angle offset (also in degrees)
     float global_angle_correction = 0f; //  -171.109421f;
@@ -107,7 +107,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     private ArrayList<Particle> g_particles;
 
     // The number of particles used
-    private int g_particle_count = 750;
+    private int g_particle_count = 500;
 
     // Step distance in pixels
     int g_step_distance_pixels = 102;
@@ -188,7 +188,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             Log.e("Sensors", "No Accelerometer!");
         } else {
             Log.e("Sensors", "Accelerometer Exists!");
-            sensorManager.registerListener(this, this.accelerometer, sensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, this.accelerometer, sensorManager.SENSOR_DELAY_FASTEST);
         }
 
         // Configure the gyroscope sensor
@@ -201,13 +201,16 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // [BACKUP] Configure the step-detector
-        this.stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-        if (this.stepDetector == null) {
-            Log.e("Sensors", "No Step-Detector!");
-        } else {
-            Log.e("Sensors", "Step-Detector Exists!");
-            sensorManager.registerListener(this, this.stepDetector, sensorManager.SENSOR_DELAY_NORMAL);
-        }
+//        this.stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
+//        if (this.stepDetector == null) {
+//            Log.e("Sensors", "No Step-Detector!");
+//        } else {
+//            Log.e("Sensors", "Step-Detector Exists!");
+//            sensorManager.registerListener(this, this.stepDetector, sensorManager.SENSOR_DELAY_NORMAL);
+//        }
+
+        this.simpleStepDetector = new SimpleStepDetector();
+        simpleStepDetector.registerListener(this);
 
         // Run the updater
         this.initRefreshTimer(50);
@@ -610,59 +613,11 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
             // Accelerometer update handler
             case Sensor.TYPE_ACCELEROMETER:
-
-                // Slide the window
-//                window[0] = window[1];
-//                window[1] = window[2];
-//                window[2] = window[3];
-//                window[3] = window[4];
-//                window[4] = window[5];
-//                window[5] = window[6];
-//                window[6] = window[7];
-//                window[7] = window[8];
-//                window[8] = window[9];
-//                window[9] = window[10];
-//                window[10] = window[11];
-//                window[11] = window[12];
-//                window[12] = window[13];
-//                window[13] = window[14];
-//                window[14] = window[15];
-//                window[15] = window[16];
-//                window[16] = window[17];
-//                window[17] = window[18];
-//                window[18] = window[19];
-//                window[19] = window[20];
-//                window[20] = window[21];
-//                window[21] = window[22];
-//                window[22] = window[23];
-//                window[23] = sensorEvent.values[2];
-
-                // Check if we have a step
-//                if (Correlator.isStep(window)) {
-//                    this.lock.lock();
-//                    setGlobalStepCount(g_total_steps + 1);
-//                    this.updateModel();
-//                    this.checkConvergence();
-//                    this.lock.unlock();
-//                }
-
-                // Enqueue the next sample.
-//                window[window_index] = sensorEvent.values[2];
-//
-//                // Update the index
-//                window_index = (window_index + 1) % window_length;
-//
-//                // Check if the variance is above limit. Then register step
-//                float variance = Correlator.variance(window);
-//                System.out.println(variance);
-//                if (variance >= 4.0) {
-//                    this.lock.lock();
-//                    setGlobalStepCount(g_total_steps + 1);
-//                    this.updateModel();
-//                    this.checkConvergence();
-//                    this.lock.unlock();
-//                }
-
+                simpleStepDetector.updateAccel(
+                        sensorEvent.timestamp,
+                        sensorEvent.values[0],
+                        sensorEvent.values[1],
+                        sensorEvent.values[2]);
                 break;
 
             case Sensor.TYPE_STEP_DETECTOR:
@@ -765,5 +720,14 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void step(long timeNs) {
+        System.out.println("Step!\n");
+        this.lock.lock();
+        setGlobalStepCount(g_total_steps + 1);
+        this.updateModel();
+        this.lock.unlock();
     }
 }
