@@ -18,20 +18,21 @@ public class Particle {
     // Center point
     private Point center;
 
-    // Angle (degrees)
-    private double angle;
-
     // Weight of particle
     private double weight;
 
     // Radius of particle
     private int radius;
 
-    // Level particle was last in
-    private int last_level = -1;
+    // Whether or not to show the particle
+    private boolean visible = true;
+
+    // ID of the zone the particle was last in
+    private int last_zone_id = -1;
 
     // Constructor with optional color
-    public Particle (Point center, int radius, double weight) {
+    public Particle (int zone, Point center, int radius, double weight) {
+        this.last_zone_id = zone;
         this.center = center;
         this.radius = radius;
         this.weight = weight;
@@ -40,9 +41,9 @@ public class Particle {
     }
 
     // Constructor with optional color
-    public Particle (Point center, int radius, double weight, double angle, int color) {
+    public Particle (int zone, Point center, int radius, double weight, int color) {
+        this.last_zone_id = zone;
         this.center = center;
-        this.angle = angle;
         this.radius = radius;
         this.weight = weight;
         this.fillShape = new ShapeDrawable(new OvalShape());
@@ -51,43 +52,18 @@ public class Particle {
 
     // Positions the particle
     private void setBounds () {
-        this.fillShape.setBounds(center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+        this.fillShape.setBounds(center.x - radius,
+                center.y - radius, center.x + radius,
+                center.y + radius);
     }
 
     // Draws the particle
     public void draw (Canvas canvas) {
-        this.setBounds();
-        this.fillShape.draw(canvas);
-    }
-
-
-    public ShapeDrawable getDrawable () {
-        return this.fillShape;
-    }
-
-    // Moves the particle along its internal angle
-    public void move (double units, double xnoise, double ynoise) {
-        double angle_radians = Math.toRadians(this.angle);
-        double dx = Math.sin(angle_radians);
-        double dy = Math.cos(angle_radians);
-        if (dx == 0) {
-            xnoise = 0;
+        if (this.visible) {
+            this.setBounds();
+            this.fillShape.draw(canvas);
         }
-        if (dy == 0) {
-            ynoise = 0;
-        }
-        this.center.x += (int)(dx * units + xnoise);
-        this.center.y -= (int)(dy * units + ynoise);
     }
-
-
-    // Sets the angle
-    public void setAngle (double angle) {
-        this.angle = angle;
-    }
-
-    // Gets the angle
-    public double getAngle () { return this.angle; }
 
     // Setter for origin
     public void setPosition (Point center) {
@@ -98,6 +74,18 @@ public class Particle {
     public Point getPosition () {
         return this.center;
     }
+
+    // Setter for visibility
+    public void setVisible (boolean visible) { this.visible = visible; }
+
+    // Getter for visibility
+    public boolean getVisible () { return this.visible; }
+
+    // Getter for the zone ID
+    public int get_last_zone_id () { return this.last_zone_id; }
+
+    // Setter for the zone ID
+    public void set_last_zone_id (int zone) { this.last_zone_id = zone; }
 
     // Returns a random point near the particle
     public Point getRandomPointNearby(float radius) {
@@ -121,7 +109,6 @@ public class Particle {
 
     // Update particle positions based on an observation
     public static ArrayList<Particle> resample (double spawn_noise_radius,
-                                                double spawn_angle_fanout,
                                                 ArrayList<Particle> priors,
                                                 ArrayList<Zone> zones)
     {
@@ -129,7 +116,7 @@ public class Particle {
         double normalization_constant = 0.0, cumulative_distribution_value = 0.0;
         double new_weight = (1.0 / priors.size());
         ArrayList<Double> distribution = new ArrayList<Double>(priors.size());
-        ArrayList<Particle> resampled = new ArrayList<Particle>(priors.size());
+        ArrayList<Particle> resampled  = new ArrayList<Particle>(priors.size());
 
         // Update particle probabilities: (whether they are in the zone or not)
         for (Particle p : priors) {
@@ -181,13 +168,9 @@ public class Particle {
             Point origin = new Point((int)(parent.getPosition().x + noise_x),
                     (int)(parent.getPosition().y + noise_y));
 
-            // Compute adjustment to fanout angle
-            double noise_angle = (Math.random() * spawn_angle_fanout) - (spawn_angle_fanout / 2);
-
             // Respawn particle with reset weights, in approximate location of previous
             Particle next =
-                    new Particle(origin, parent.radius, new_weight,
-                            parent.getAngle(), Color.MAGENTA);
+                    new Particle(parent.get_last_zone_id(), origin, parent.radius, new_weight, Color.MAGENTA);
 
             resampled.add(next);
         }

@@ -11,6 +11,9 @@ import java.util.ArrayList;
 
 public class Zone {
 
+    // Integer id of the zone
+    protected int id;
+
     // Name of the zone
     protected String name;
 
@@ -33,9 +36,10 @@ public class Zone {
     protected int level;
 
     // Constructor
-    public Zone (String name, int level, Rect rect, boolean enabled)
+    public Zone (int id, String name, int level, Rect rect, boolean enabled)
     {
         // Assign fields
+        this.id = id;
         this.name = name;
         this.level = level;
         this.rect = rect;
@@ -49,6 +53,7 @@ public class Zone {
 
     // Getters
 
+    public int getId () { return this.id; }
     public String getName () { return this.name; }
     public Rect getRect () { return this.rect; }
     public ShapeDrawable getFill () { return this.fill; }
@@ -130,6 +135,36 @@ public class Zone {
         fill.draw(canvas);
     }
 
+    // Returns true if transition between zones is permitted
+    public static boolean adjacentZones (int from, int to)
+    {
+        int[][] matrix = new int[][]{
+                // Row index is the room, columns are whether adjacent
+                //  0  1  2  3  4  5  6  7  8  9 10 11 12 13
+                { 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0 },
+                { 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0 },
+                { 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0 },
+                { 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0 },
+                { 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
+                { 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0 },
+                { 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1 },
+                { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 }
+        };
+
+        // Return false if any argument is -1
+        if (from == -1 || to == -1) {
+            return false;
+        }
+
+        return (matrix[from][to] == 1);
+    }
+
     // Get layout for apartment
     public static ArrayList<Zone> getApartmentLayout ()
     {
@@ -140,7 +175,7 @@ public class Zone {
         Rect rz2     = Zone.rectFrom(358, 472, 310, 313);
         Rect rz2_2   = Zone.rectFrom(533, 774, 135, 98);
         Rect rz3     = Zone.rectFrom(697, 724, 602, 713);
-        Rect rz4     = Zone.rectFrom(80, 1144, 588, 293);
+        Rect rz4     = Zone.rectFrom(368, 1144, 300, 293);
 
         // Rects: Doors
         Rect r_z1_z2 = Zone.rectFrom(321, 473, 47, 147);
@@ -149,15 +184,15 @@ public class Zone {
         Rect r_z3_z4 = Zone.rectFrom(660, 1145, 47, 147);
 
         // Zones:
-        zs.add(new Zone("Cell 1", 2, rz1, true));
-        zs.add(new Zone("Cell 2", 2, rz2, true));
-        zs.add(new Zone("Cell 2", 2, rz2_2, true));
-        zs.add(new Zone("Cell 3", 2, rz3, true));
-        zs.add(new Zone("Cell 4", 2, rz4, true));
-        zs.add(new Zone("Door (1/2)", 2, r_z1_z2, true));
-        zs.add(new Zone("Door (0/2)", 2, r_z0_z2, true));
-        zs.add(new Zone("Door (2/3)", 2, r_z2_z3, true));
-        zs.add(new Zone("Door (3/4)", 2, r_z3_z4, true));
+        zs.add(new Zone(0, "Cell 1", 2, rz1, true));
+        zs.add(new Zone(1, "Cell 2", 2, rz2, true));
+        zs.add(new Zone(2, "Cell 2", 2, rz2_2, true));
+        zs.add(new Zone(3, "Cell 3", 2, rz3, true));
+        zs.add(new Zone(4, "Cell 4", 2, rz4, true));
+        zs.add(new Zone(5, "Door (1/2)", 2, r_z1_z2, true));
+        zs.add(new Zone(6, "Door (0/2)", 2, r_z0_z2, true));
+        zs.add(new Zone(7, "Door (2/3)", 2, r_z2_z3, true));
+        zs.add(new Zone(8, "Door (3/4)", 2, r_z3_z4, true));
 
         return zs;
     }
@@ -177,13 +212,13 @@ public class Zone {
         Rect rz0     = Zone.rectFrom(46, 638, 284, 848);
 
         // Zones [Stairs]
-        zs.add(new Zone("Stairs", 1, rz0, true));
+        zs.add(new Zone(9, "Stairs", 1, rz0, true));
 
         // Zones [Rooms]
-        zs.add(new Zone("Cell 5", 0, rz5, true));
-        zs.add(new Zone("Cell 6", 0, rz6, true));
-        zs.add(new Zone("Cell 7", 0, rz7, true));
-        zs.add(new Zone("Cell 8", 0, rz8, true));
+        zs.add(new Zone(10, "Cell 5", 0, rz5, true));
+        zs.add(new Zone(11, "Cell 6", 0, rz6, true));
+        zs.add(new Zone(12, "Cell 7", 0, rz7, true));
+        zs.add(new Zone(13, "Cell 8", 0, rz8, true));
 
         return zs;
     }

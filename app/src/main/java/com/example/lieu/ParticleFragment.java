@@ -107,7 +107,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     private ArrayList<Particle> g_particles;
 
     // The number of particles used
-    private int g_particle_count = 500;
+    private int g_particle_count = 750;
 
     // Step distance in pixels
     int g_step_distance_pixels = 102;
@@ -303,6 +303,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         // Allocate particles for each area.
         int total_allocated = 0;
         for (int i = 0; i < zones.size(); ++i) {
+            int zone_id = zones.get(i).getId();
             int w = zones.get(i).getRect().width();
             int h = zones.get(i).getRect().height();
             int x = zones.get(i).getRect().left;
@@ -322,7 +323,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             for (int j = 0; j < particle_count; ++j) {
                 int px = x + (int)((float)w * Math.random());
                 int py = y + (int)((float)h * Math.random());
-                Particle p = new Particle(new Point(px, py), 6, 0.0f);
+                Particle p = new Particle(zone_id, new Point(px, py), 6, 0.0f);
                 ps.add(p);
             }
         }
@@ -390,7 +391,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             return;
         }
 
-        this.convergence_particle = new Particle(p, 45, 0.0f, 0.0f, Color.GREEN);
+        this.convergence_particle = new Particle(-1, p, 45, 0.0f, Color.GREEN);
 
         for (Zone z : this.g_zones) {
             if (z.containsPoint(p)) {
@@ -466,20 +467,31 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // Updates the model. Called when a step has occurred.
     public void updateModel () {
 
-        // Compute the distance to step in pixels
-        //float adjust = (float)DataManager.getInstance().getParticleAdjustmentComponent();
-        //float step_distance_meters = g_user_height * 0.44f + adjust;
-        //int step_distance_pixels = (int)(step_distance_meters * g_scale);
-
-
         // If no particles - do nothing
         if (is_canvas_initialized == false || this.g_particles == null) {
             return;
         }
 
-        // Update particles
-        g_particles = Particle.resample((g_step_distance_pixels * 2) / 3,
-                10.0, g_particles, g_zones);
+        // Move all particles
+        double angle_corrected = global_angle_degrees - global_angle_correction;
+        double compass_angle = (double)(((int)angle_corrected + 360) % 360);
+        double movement_noise_max = 0.5 * (double)g_step_distance_pixels;
+        double movement_noise = (movement_noise_max * Math.random()) - (movement_noise_max / 2);
+
+        for (Particle p : g_particles) {
+            double angle_radians = Math.toRadians(compass_angle);
+            double dx = Math.sin(angle_radians), dy = -Math.cos(angle_radians);
+
+            int move_x = (int)(dx * ((double)g_step_distance_pixels + movement_noise));
+            int move_y = (int)(dy * ((double)g_step_distance_pixels + movement_noise));
+            Point destination = new Point(p.getPosition().x + move_x,
+                                             p.getPosition().y + move_y);
+            p.setPosition(destination);
+        }
+
+        // Resample particles
+        double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
+        g_particles = Particle.resample(spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
         if (g_particles == null) {
@@ -487,23 +499,35 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             g_particles = explode();
         }
 
-
-        // Compute the direction to step (Up/Down/Left/Right)
-        double angle_corrected = global_angle_degrees - global_angle_correction;
-        int compass_angle = ((int)angle_corrected + 360) % 360;
-        Log.e("Compass Angle", "= " + compass_angle);
-        double angle = compass_angle;
-        Log.e("Angle", "= " + angle);
-        // Move all particles by this distance
+        // Clean up particles out of bounds or those that made illegal jumps
         for (Particle p : g_particles) {
-            double angle_radians = Math.toRadians(angle);
-            p.setAngle(angle_radians);
-            double dx = Math.sin(angle_radians);
-            double dy = -Math.cos(angle_radians);
-            int move_x = (int)(dx * (double)g_step_distance_pixels);
-            int move_y = (int)(dy * (double)g_step_distance_pixels);
-            Point location = new Point(p.getPosition().x + move_x, p.getPosition().y + move_y);
-            p.setPosition(location);
+            p.setVisible(false);
+            int current_zone = -1;
+            for (Zone z : g_zones) {
+                if (z.containsPoint(p.getPosition())) {
+                    p.setVisible(true);
+                    current_zone = z.getId();
+                    break;
+                }
+            }
+
+            // Extract old zone, set new zone
+            int old_zone = p.get_last_zone_id();
+            int new_zone = current_zone;
+
+            // If the new zone is out of bounds, then finished as it is not visible
+            if (new_zone == -1) {
+                break;
+            }
+
+            // If it is in bounds, but not a legal move. Then move out of bounds and mark
+            if (Zone.adjacentZones(old_zone, new_zone) == false) {
+                p.setVisible(false);
+                p.setPosition(new Point(0, 0));
+            }
+
+            // Otherwise update the zone
+            p.set_last_zone_id(new_zone);
         }
 
         // Auto check convergence
