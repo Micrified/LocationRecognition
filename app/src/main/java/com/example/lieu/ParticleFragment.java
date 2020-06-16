@@ -43,6 +43,8 @@ import java.util.TimerTask;
 import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static android.hardware.Sensor.TYPE_MAGNETIC_FIELD;
+
 public class ParticleFragment extends Fragment implements View.OnClickListener, SensorEventListener, Swap, StepListener {
 
     // The reset button
@@ -84,8 +86,18 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // The gyroscope
     private Sensor gyroscope;
 
+    // General orientation sensor
+    private Sensor magnetometer;
+
+    // Sensor readings
+    private final float[] accelerometerReading = new float[3];
+    private final float[] magnetometerReading = new float[3];
+    private final float[] rotationMatrix = new float[9];
+
+    // Computed orientation
+    private final float[] orientationAngles = new float[3];
+
     // The step-detector
-    //private Sensor stepDetector;
     private SimpleStepDetector simpleStepDetector;
 
     // The angle offset (also in degrees)
@@ -182,33 +194,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         // Configure the textview
         this.stepTextView = getView().findViewById(R.id.step_text_view);
 
-        // Configure the accelerometer sensor
-        this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (this.accelerometer == null) {
-            Log.e("Sensors", "No Accelerometer!");
-        } else {
-            Log.e("Sensors", "Accelerometer Exists!");
-            sensorManager.registerListener(this, this.accelerometer, sensorManager.SENSOR_DELAY_FASTEST);
-        }
-
-        // Configure the gyroscope sensor
-        this.gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (this.gyroscope == null) {
-            Log.e("Sensors", "No Gyroscope!");
-        } else {
-            Log.e("Sensors", "Gyroscope Exists!");
-            sensorManager.registerListener(this, this.gyroscope, sensorManager.SENSOR_DELAY_FASTEST);
-        }
-
-        // [BACKUP] Configure the step-detector
-//        this.stepDetector = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
-//        if (this.stepDetector == null) {
-//            Log.e("Sensors", "No Step-Detector!");
-//        } else {
-//            Log.e("Sensors", "Step-Detector Exists!");
-//            sensorManager.registerListener(this, this.stepDetector, sensorManager.SENSOR_DELAY_NORMAL);
-//        }
-
+        // Setup the step detector
         this.simpleStepDetector = new SimpleStepDetector();
         simpleStepDetector.registerListener(this);
 
@@ -235,7 +221,27 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
                     public void run() {
                         ParticleFragment.this.lock.lock();
                         if (ParticleFragment.this.is_canvas_initialized) {
+
+                            // Update rotation matrix, which is needed to update orientation angles.
+                            SensorManager.getRotationMatrix(rotationMatrix, null,
+                                    accelerometerReading, magnetometerReading);
+
+                            // Obtain the orientation angles
+                            SensorManager.getOrientation(rotationMatrix, orientationAngles);
+
+                            // Update the orientation
+                            float rate_yaw = orientationAngles[0];
+                            System.out.println("angle = " + rate_yaw);
+                            float period = (1.0f/20.0f);
+                            float delta_yaw = rate_yaw * period;
+                            ParticleFragment.this.lock.lock();
+                            ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
+                            updateCompass();
+                            ParticleFragment.this.lock.unlock();
+
+                            // Repaint the canvas
                             ParticleFragment.this.paintCanvas();
+
                             // Then request the canvas be updated
                             if (getView() != null && getView().findViewById(R.id.canvas_image_view) != null) {
                                 getView().findViewById(R.id.canvas_image_view).invalidate();
@@ -349,7 +355,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
     // Draws all areas and particles on the user interface
     public void paintCanvas () {
-
 
         // Draw background color
         canvas.drawColor(Color.BLACK);
@@ -596,49 +601,46 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
      */
 
 
-    // Window length
-    public static int window_length = 50;
-
-    // Window index (not used for correlator)
-    public int window_index;
-
-    // The data window
-    float[] window = new float[window_length];
-
     // [SYNC] Handler for change in sensors
     @Override
     public void onSensorChanged (SensorEvent sensorEvent) {
 
         switch(sensorEvent.sensor.getType()) {
 
-            // Accelerometer update handler
-            case Sensor.TYPE_ACCELEROMETER:
-                simpleStepDetector.updateAccel(
-                        sensorEvent.timestamp,
-                        sensorEvent.values[0],
-                        sensorEvent.values[1],
-                        sensorEvent.values[2]);
-                break;
+            // Magnetometer
+            case TYPE_MAGNETIC_FIELD: {
 
-            case Sensor.TYPE_STEP_DETECTOR:
-                this.lock.lock();
-                setGlobalStepCount(g_total_steps + 1);
-                this.updateModel();
-                this.lock.unlock();
-                break;
+                // Copy for orientation
+                System.arraycopy(sensorEvent.values, 0, magnetometerReading,
+                        0, magnetometerReading.length);
+            }
+            break;
+
+            // Accelerometer
+            case Sensor.TYPE_ACCELEROMETER: {
+
+                // Copy to step detector
+                simpleStepDetector.updateAccel(sensorEvent.timestamp,
+                        sensorEvent.values[0], sensorEvent.values[1],
+                        sensorEvent.values[2]);
+
+                // Copy for orientation
+                System.arraycopy(sensorEvent.values, 0, accelerometerReading,
+                        0, accelerometerReading.length);
+            }
+            break;
 
             // Gyroscope-field update handler
             case Sensor.TYPE_GYROSCOPE:
                 //System.out.println(sensorEvent.timestamp - last_timestamp);
-
-                float rate_yaw = sensorEvent.values[2];
-                float period = (1.0f/200.0f);
-                float dyaw = rate_yaw * period;
-
-                this.lock.lock();
-                this.global_angle_degrees += Math.toDegrees(-dyaw);
-                updateCompass();
-                this.lock.unlock();
+//                float rate_yaw = sensorEvent.values[2];
+//                float period = (1.0f/200.0f);
+//                float dyaw = rate_yaw * period;
+//
+//                this.lock.lock();
+//                this.global_angle_degrees += Math.toDegrees(-dyaw);
+//                updateCompass();
+//                this.lock.unlock();
                 break;
         }
     }
@@ -653,16 +655,32 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onResume() {
         super.onResume();
-        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (accelerometer != null) {
-            sensorManager.registerListener(this, accelerometer,
-                    SensorManager.SENSOR_DELAY_NORMAL);
+
+        // Acquire the accelerometer sensor
+        this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (this.accelerometer == null) {
+            Log.e("Sensors", "Unable to acquire accelerometer!");
+        } else {
+            Log.i("Sensors", "Accelerometer acquired!");
+            sensorManager.registerListener(this, this.accelerometer, sensorManager.SENSOR_DELAY_FASTEST);
         }
 
-        Sensor gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (gyroscope != null) {
-            sensorManager.registerListener(this, gyroscope,
-                    SensorManager.SENSOR_DELAY_NORMAL);
+        // Acquire the gyroscope
+        this.gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        if (this.gyroscope == null) {
+            Log.e("Sensors", "Unable to acquire gyroscope!");
+        } else {
+            Log.i("Sensors", "Gyroscope acquired!");
+            sensorManager.registerListener(this, this.gyroscope, sensorManager.SENSOR_DELAY_FASTEST);
+        }
+
+        // Acquire the magnetometer
+        this.magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD);
+        if (this.magnetometer == null) {
+            Log.e("Sensors", "Unable to acquire magnetometer!");
+        } else {
+            Log.i("Sensors", "Magnetometer acquired!");
+            sensorManager.registerListener(this, this.magnetometer, sensorManager.SENSOR_DELAY_FASTEST);
         }
 
     }
@@ -671,6 +689,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onPause() {
         super.onPause();
+
+        // Disable sensor updates
         sensorManager.unregisterListener(this);
     }
 
@@ -681,50 +701,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
     /*
      *******************************************************************************
-     *                                  Recording                                  *
+     *                               Step Detection                                *
      *******************************************************************************
      */
 
-
-    // Exports recorded data
-    public void exportAccelerometer (ArrayList<Float> amplitude, ArrayList<Long> timestamps) {
-        String filename = "accelerometer_data.txt";
-        File file = null;
-        FileOutputStream fileOutputStream = null;
-        OutputStreamWriter outputStreamWriter = null;
-
-        // Ensure that we can export
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state) == false) {
-            Log.e("OS", "Environment can't use external storage!");
-            return;
-        }
-
-        // Open the file
-        file = new File(getContext().getExternalFilesDir(null), filename);
-
-        try {
-            fileOutputStream = new FileOutputStream(file, false);
-            outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-
-            for (int i = 0; i < amplitude.size(); ++i) {
-                String out = String.format("%d %f\n", timestamps.get(i), amplitude.get(i));
-                outputStreamWriter.write(out);
-            }
-
-            outputStreamWriter.close();
-            fileOutputStream.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public void step(long timeNs) {
-        System.out.println("Step!\n");
         this.lock.lock();
         setGlobalStepCount(g_total_steps + 1);
         this.updateModel();
