@@ -108,7 +108,8 @@ public class Particle {
 
 
     // Update particle positions based on an observation
-    public static ArrayList<Particle> resample (double spawn_noise_radius,
+    public static ArrayList<Particle> resample (float global_ambient_light,
+                                                double spawn_noise_radius,
                                                 ArrayList<Particle> priors,
                                                 ArrayList<Zone> zones)
     {

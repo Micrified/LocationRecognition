@@ -91,7 +91,10 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     private Sensor magnetometer;
 
     // Pressure sensor
-    private Sensor pressure;
+    private Sensor barometer;
+
+    // Ambient light sensor
+    private Sensor ambience;
 
     // Sensor readings
     private final float[] accelerometerReading = new float[3];
@@ -110,11 +113,14 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // The angle in degrees
     float global_angle_degrees = 0f;
 
+    // The current ambient light value
+    float global_ambient_light = 0f;
+
+    // The current reading on the barometer
+    float global_barometer_value = 0f;
+
     // Total steps so far
     int g_total_steps = 0;
-
-    // Current barometer pressure
-    float current_bar = 0;
 
     // The global screen canvas width and height
     int g_width, g_height;
@@ -240,7 +246,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
                             float rate_yaw = orientationAngles[0];
                             System.out.println("angle = " + rate_yaw);
                             float period = (1.0f/20.0f);
-                            float delta_yaw = rate_yaw * period;
                             ParticleFragment.this.lock.lock();
                             ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
                             updateCompass();
@@ -506,7 +511,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
         // Resample particles
         double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
-        g_particles = Particle.resample(spawn_noise_radius, g_particles, g_zones);
+        g_particles = Particle.resample(global_ambient_light, spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
         if (g_particles == null) {
@@ -576,13 +581,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         g_total_steps = steps;
         this.stepTextView.setText(String.format("Steps: %d", g_total_steps));
     }
-
-    // Sets the current pressure
-    private void setCurrentPressure (float bar) {
-        current_bar = bar;
-        //this.stepTextView.setText(String.format("Pressure: %d", bar));
-    }
-
 
     // [SYNC] Resets all particles, and saves next rotation offset as error
     private void reset () {
@@ -655,10 +653,23 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 //                updateCompass();
 //                this.lock.unlock();
                 break;
+
+
             // Barometer
-            case Sensor.TYPE_PRESSURE:
-                setCurrentPressure(sensorEvent.values[0]);
-                break;
+            case Sensor.TYPE_PRESSURE: {
+                this.lock.lock();
+                global_barometer_value = sensorEvent.values[0];
+                this.lock.unlock();
+            }
+            break;
+
+            // Ambient light
+            case Sensor.TYPE_LIGHT: {
+                this.lock.lock();
+                global_ambient_light = sensorEvent.values[0];
+                this.lock.unlock();
+            }
+            break;
         }
     }
 
@@ -692,7 +703,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // Acquire the magnetometer
-        this.magnetometer = sensorManager.getDefaultSensor(TYPE_MAGNETIC_FIELD);
+        this.magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         if (this.magnetometer == null) {
             Log.e("Sensors", "Unable to acquire magnetometer!");
         } else {
@@ -701,12 +712,21 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // Acquire the barometer
-        this.pressure = sensorManager.getDefaultSensor(TYPE_PRESSURE);
-        if (this.pressure == null) {
+        this.barometer = sensorManager.getDefaultSensor(Sensor.TYPE_PRESSURE);
+        if (this.barometer == null) {
             Log.e("Sensors", "Unable to acquire barometer!");
         } else {
             Log.i("Sensors", "Barometer acquired!");
-            sensorManager.registerListener(this, this.pressure, sensorManager.SENSOR_DELAY_FASTEST);
+            sensorManager.registerListener(this, this.barometer, sensorManager.SENSOR_DELAY_FASTEST);
+        }
+
+        // Acquire the ambient light sensor
+        this.ambience = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        if (this.ambience == null) {
+            Log.e("Sensors", "Unable to acquire ambient light sensor!");
+        } else {
+            Log.i("Sensors", "Ambient light sensor acquired!");
+            sensorManager.registerListener(this, this.ambience, sensorManager.SENSOR_DELAY_NORMAL);
         }
 
     }
