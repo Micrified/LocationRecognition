@@ -44,6 +44,7 @@ import java.util.Vector;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static android.hardware.Sensor.TYPE_MAGNETIC_FIELD;
+import static android.hardware.Sensor.TYPE_PRESSURE;
 
 public class ParticleFragment extends Fragment implements View.OnClickListener, SensorEventListener, Swap, StepListener {
 
@@ -89,6 +90,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // General orientation sensor
     private Sensor magnetometer;
 
+    // Pressure sensor
+    private Sensor pressure;
+
     // Sensor readings
     private final float[] accelerometerReading = new float[3];
     private final float[] magnetometerReading = new float[3];
@@ -108,6 +112,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
     // Total steps so far
     int g_total_steps = 0;
+
+    // Current barometer pressure
+    float current_bar = 0;
 
     // The global screen canvas width and height
     int g_width, g_height;
@@ -570,6 +577,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         this.stepTextView.setText(String.format("Steps: %d", g_total_steps));
     }
 
+    // Sets the current pressure
+    private void setCurrentPressure (float bar) {
+        current_bar = bar;
+        //this.stepTextView.setText(String.format("Pressure: %d", bar));
+    }
+
 
     // [SYNC] Resets all particles, and saves next rotation offset as error
     private void reset () {
@@ -642,6 +655,10 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 //                updateCompass();
 //                this.lock.unlock();
                 break;
+            // Barometer
+            case Sensor.TYPE_PRESSURE:
+                setCurrentPressure(sensorEvent.values[0]);
+                break;
         }
     }
 
@@ -681,6 +698,15 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         } else {
             Log.i("Sensors", "Magnetometer acquired!");
             sensorManager.registerListener(this, this.magnetometer, sensorManager.SENSOR_DELAY_FASTEST);
+        }
+
+        // Acquire the barometer
+        this.pressure = sensorManager.getDefaultSensor(TYPE_PRESSURE);
+        if (this.pressure == null) {
+            Log.e("Sensors", "Unable to acquire barometer!");
+        } else {
+            Log.i("Sensors", "Barometer acquired!");
+            sensorManager.registerListener(this, this.pressure, sensorManager.SENSOR_DELAY_FASTEST);
         }
 
     }

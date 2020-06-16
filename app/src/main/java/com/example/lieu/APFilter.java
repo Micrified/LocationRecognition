@@ -1,6 +1,7 @@
 package com.example.lieu;
 
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 
 import java.util.ArrayList;
 
@@ -13,6 +14,14 @@ public class APFilter {
         for (ScanResult s : unfiltered)
         {
             System.out.println(s.SSID);
+
+
+            if(WifiManager.calculateSignalLevel(s.level, 10) < 2)
+            {
+                toRemove.add(s);
+                break;
+            }
+
             for(int i = 0; i < SSID_Identifiers.length; i++)
             {
                 System.out.println(SSID_Identifiers[i][1]);
@@ -21,7 +30,10 @@ public class APFilter {
                     //if match
                     toRemove.add(s);
                 }
+
+
             }
+
         }
 
         if(toRemove.size() != 0)
