@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 public class AmbientLight {
 
+    public static final int required_sample_count = 10;
+
     // Enumeration: Possible environments
     enum Environment {
         NONE,

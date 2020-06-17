@@ -143,6 +143,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // Boolean indicating if convergence has been achieved yet
     private Zone convergedZone = null;
 
+    // Boolean indicating if light information is available
+    private boolean ambient_light_ready = false;
+
 
     /*
      *******************************************************************************
@@ -244,8 +247,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
                             // Update the orientation
                             float rate_yaw = orientationAngles[0];
-                            System.out.println("angle = " + rate_yaw);
-                            float period = (1.0f/20.0f);
                             ParticleFragment.this.lock.lock();
                             ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
                             updateCompass();
@@ -511,7 +512,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
         // Resample particles
         double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
-        g_particles = Particle.resample(global_ambient_light, spawn_noise_radius, g_particles, g_zones);
+        g_particles = Particle.resample(ambient_light_ready, global_ambient_light,
+                spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
         if (g_particles == null) {
@@ -683,6 +685,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onResume() {
         super.onResume();
+
+        // Update whether light information is available
+        this.ambient_light_ready =
+                DataManager.getInstance().getAmbientLight().hasAtLeastNSamples(AmbientLight.required_sample_count);
+
+        Log.e("Update", "Ambient light enabled: " + ambient_light_ready);
 
         // Acquire the accelerometer sensor
         this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

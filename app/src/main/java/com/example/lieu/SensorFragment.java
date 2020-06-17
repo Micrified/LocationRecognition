@@ -53,9 +53,6 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
     // Spinner: Environment for light
     Spinner spinner_light_environment;
 
-    // The desired maximum number of samples
-    private static final int required_samples = 10;
-
     // Sample: Light (lux)
     float global_light_sample;
 
@@ -273,14 +270,14 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
         final AmbientLight ambientLight = DataManager.getInstance().getAmbientLight();
 
         // Disable the button if sufficient samples for current environment
-        if (ambientLight.get_sample_count(global_light_environment) >= required_samples) {
+        if (ambientLight.get_sample_count(global_light_environment) >= AmbientLight.required_sample_count) {
             button_sample_light_sensor.setEnabled(false);
         } else {
             button_sample_light_sensor.setEnabled(true);
         }
 
         // Enable the test button if sufficient samples collected
-        button_test_light_environment.setEnabled(ambientLight.hasAtLeastNSamples(required_samples));
+        button_test_light_environment.setEnabled(ambientLight.hasAtLeastNSamples(AmbientLight.required_sample_count));
 
         // Update the result text
         textview_light_test_result.setText("" + global_test_result);
@@ -297,7 +294,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
                 // Update UI elements
                 SensorFragment.this.textview_light_sample_counter.setText(
                         String.format("%d/%d", ambientLight.get_sample_count(global_light_environment),
-                                required_samples)
+                                AmbientLight.required_sample_count)
                 );
 
                 // Todo: Barometer sample count

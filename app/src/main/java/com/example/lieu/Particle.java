@@ -106,9 +106,30 @@ public class Particle {
         return this.weight;
     }
 
+    // Assist function returning whether given zone belongs to given environment
+    private static boolean zoneInEnvironment (Zone zone, AmbientLight.Environment environment)
+    {
+        switch (environment) {
+            case INSIDE: {
+                return (zone.getId() >= 0 && zone.getId() < 9);
+            }
+
+            case STAIRS: {
+                return (zone.getId() == 9);
+            }
+
+            case OUTSIDE: {
+                return (zone.getId() > 9 && zone.getId() <= 13);
+            }
+        }
+
+        // Should never arrive here
+        return false;
+    }
 
     // Update particle positions based on an observation
-    public static ArrayList<Particle> resample (float global_ambient_light,
+    public static ArrayList<Particle> resample (boolean ambient_light_ready,
+                                                float global_ambient_light,
                                                 double spawn_noise_radius,
                                                 ArrayList<Particle> priors,
                                                 ArrayList<Zone> zones)
@@ -123,11 +144,29 @@ public class Particle {
         for (Particle p : priors) {
             double obs = 0.0;
             for (Zone z : zones) {
+
+                // Set probability to 1 if it exists
                 if (z.containsPoint(p.getPosition())) {
                     obs = 1.0;
                     number_living_particles++;
-                    break;
                 }
+
+                // If using ambient light
+                if (ambient_light_ready == true) {
+                    // Otherwise find out what environment we're in
+                    AmbientLight.Environment e = DataManager.getInstance().getAmbientLight().
+                            getMatchingEnvironment(global_ambient_light);
+
+                    // If particle environment doesn't match then decrease by .25
+                    if (Particle.zoneInEnvironment(z, e) == false) {
+                        obs -= 0.10;
+                    }
+                }
+
+                // If using barometer
+                // Todo ...
+
+
             }
             p.setWeight(p.getWeight() * obs);
             normalization_constant += p.getWeight();
