@@ -129,7 +129,7 @@ public class Particle {
 
     // Update particle positions based on an observation
     public static ArrayList<Particle> resample (boolean ambient_light_ready,
-                                                float global_ambient_light,
+                                                AmbientLight.Environment env,
                                                 double spawn_noise_radius,
                                                 ArrayList<Particle> priors,
                                                 ArrayList<Zone> zones)
@@ -149,24 +149,21 @@ public class Particle {
                 if (z.containsPoint(p.getPosition())) {
                     obs = 1.0;
                     number_living_particles++;
+                } else {
+                    continue;
                 }
 
                 // If using ambient light
                 if (ambient_light_ready == true) {
-                    // Otherwise find out what environment we're in
-                    AmbientLight.Environment e = DataManager.getInstance().getAmbientLight().
-                            getMatchingEnvironment(global_ambient_light);
 
                     // If particle environment doesn't match then decrease by .25
-                    if (Particle.zoneInEnvironment(z, e) == false) {
-                        obs -= 0.10;
+                    if (Particle.zoneInEnvironment(z, env) == false) {
+                        obs = Math.max(obs - 0.25, 0.0);
                     }
                 }
 
                 // If using barometer
                 // Todo ...
-
-
             }
             p.setWeight(p.getWeight() * obs);
             normalization_constant += p.getWeight();

@@ -236,6 +236,9 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
         android:scrollbars="vertical"
+        android:background="@color/colorAccent"
+        android:fontFamily="monospace"
+        android:textColor="@color/colorLimeGreen"
         android:text="Status text will appear here"
         android:textAlignment="textStart"
         android:textSize="10sp" />

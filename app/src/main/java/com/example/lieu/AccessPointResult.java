@@ -124,6 +124,13 @@ public class AccessPointResult implements Serializable {
         return this.samples;
     }
 
+    // Add samples
+    public void addSamples (ArrayList<Double> samples)
+    {
+        this.samples.addAll(samples);
+        this.needsRecompute = true;
+    }
+
     // Writes the AccessPointResult to an output stream writer
     public void export (OutputStreamWriter writer) {
         String format = this.getBssid() + " " + "\"" + this.getSsid() + "\"";

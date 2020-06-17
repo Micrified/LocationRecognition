@@ -16,7 +16,7 @@ public class APFilter {
             System.out.println(s.SSID);
 
 
-            if(WifiManager.calculateSignalLevel(s.level, 10) < 2)
+            if(WifiManager.calculateSignalLevel(s.level, 10) < 6)
             {
                 toRemove.add(s);
                 break;

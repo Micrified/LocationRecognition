@@ -114,7 +114,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     float global_angle_degrees = 0f;
 
     // The current ambient light value
-    float global_ambient_light = 0f;
+    AmbientLight.Environment global_ambient_light_environment = AmbientLight.Environment.NONE;
 
     // The current reading on the barometer
     float global_barometer_value = 0f;
@@ -251,6 +251,13 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
                             ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
                             updateCompass();
                             ParticleFragment.this.lock.unlock();
+
+                            // Update the zone
+                            if (ambient_light_ready) {
+                                String fmt = String.format("Steps: %3d Env: %7s",
+                                        g_total_steps, "" + global_ambient_light_environment);
+                                ParticleFragment.this.stepTextView.setText(fmt);
+                            }
 
                             // Repaint the canvas
                             ParticleFragment.this.paintCanvas();
@@ -512,7 +519,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
         // Resample particles
         double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
-        g_particles = Particle.resample(ambient_light_ready, global_ambient_light,
+        g_particles = Particle.resample(ambient_light_ready, global_ambient_light_environment,
                 spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
@@ -581,7 +588,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // Sets the step counter
     private void setGlobalStepCount (int steps) {
         g_total_steps = steps;
-        this.stepTextView.setText(String.format("Steps: %d", g_total_steps));
+        String fmt = String.format("Steps: %3d Env: %7s",
+                g_total_steps, "" + global_ambient_light_environment);
+        this.stepTextView.setText(fmt);
     }
 
     // [SYNC] Resets all particles, and saves next rotation offset as error
@@ -668,7 +677,18 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             // Ambient light
             case Sensor.TYPE_LIGHT: {
                 this.lock.lock();
-                global_ambient_light = sensorEvent.values[0];
+                global_ambient_light_environment = DataManager.getInstance().
+                        getAmbientLight().getMatchingEnvironment(sensorEvent.values[0]);
+
+                // Adjust step distance for stairs if ambient light enabled
+                if (ambient_light_ready) {
+                    if (global_ambient_light_environment == AmbientLight.Environment.STAIRS) {
+                        // 25.0 cm roughly for 9inches * 1.4 pixels per cm
+                        g_step_distance_pixels = (int)(25.0f * 1.4f);
+                    } else {
+                        g_step_distance_pixels = 102;
+                    }
+                }
                 this.lock.unlock();
             }
             break;

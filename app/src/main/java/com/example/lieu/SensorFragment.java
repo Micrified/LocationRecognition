@@ -208,6 +208,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
 
             case Sensor.TYPE_PRESSURE: {
                 // Todo: Update barometer global value
+
             }
             break;
         }

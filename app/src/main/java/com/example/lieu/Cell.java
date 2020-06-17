@@ -238,11 +238,15 @@ public class Cell implements Serializable {
     // Reads the cell data from a file
     public void scan (InputStream inputStream, IOUpdateInterface delegate) {
         Scanner scanner = new Scanner(inputStream);
+        HashMap<String, AccessPointResult> accessPointResultHashMap;
         Scanner lineScanner = null;
         String bssid = null;
         String ssid = null;
         ArrayList<Double> samples;
         int samples_per_cell = 0;
+
+        // Initialize the hashmap
+        accessPointResultHashMap = new HashMap<String, AccessPointResult>();
 
         // The Access-Point array must first be reset
         this.accessPointResults = new ArrayList<AccessPointResult>();
@@ -271,10 +275,18 @@ public class Cell implements Serializable {
 
             // Ignore entries with zero samples since they cause problems
             if (samples.size() > 0) {
-                AccessPointResult ap = new AccessPointResult(ssid, bssid, samples);
-                this.accessPointResults.add(ap);
-            }
+                AccessPointResult ap;
 
+                // Lookup whether this BSSID already has an entry
+                if (accessPointResultHashMap.containsKey(bssid)) {
+                    ap = accessPointResultHashMap.get(bssid);
+                    ap.addSamples(samples);
+                } else {
+                    ap = new AccessPointResult(ssid, bssid, samples);
+                    accessPointResultHashMap.put(bssid, ap);
+                    this.accessPointResults.add(ap);
+                }
+            }
 
             // Close the line scanner
             lineScanner.close();
