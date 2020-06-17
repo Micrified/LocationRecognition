@@ -6,4 +6,6 @@
     <color name="colorCeramic">#F2F2F2</color>
     <color name="colorLightGray">#979797</color>
     <color name="colorLimeGreen">#8BC34A</color>
+    <color name="colorRedOrange">#FF5722</color>
+    <color name="colorYellow">#FFC107</color>
 </resources>

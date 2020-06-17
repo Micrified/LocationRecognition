@@ -48,7 +48,7 @@ public class DataManager implements Serializable {
 
     // Ambient light value tracker
     private AmbientLight ambientLight;
-    
+
     // The adjustment component for particle filter
     private double particle_adjustment_component = -0.05f;
 
@@ -352,5 +352,15 @@ public class DataManager implements Serializable {
     // Sets the particle adjustment component
     public void setParticleAdjustmentComponent (double component) {
         this.particle_adjustment_component = component;
+    }
+
+    // Gets the ambient light data structure. If not initialized - the value is initialized
+    public AmbientLight getAmbientLight ()
+    {
+        if (this.ambientLight == null) {
+            this.ambientLight = new AmbientLight();
+        }
+
+        return this.ambientLight;
     }
 }

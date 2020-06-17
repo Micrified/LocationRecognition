@@ -15,6 +15,9 @@
         <item android:id="@+id/nav_train"
             android:icon="@drawable/ic_train"
             android:title="Train"/>
+        <item android:id="@+id/nav_sensors"
+            android:icon="@drawable/ic_sensors"
+            android:title="Ambient Light"/>
         <item android:id="@+id/nav_data"
             android:icon="@drawable/ic_data"
             android:title="View Data"/>
