@@ -127,9 +127,30 @@ public class Particle {
         return false;
     }
 
+    // Overload
+    private static boolean zoneInEnvironment (Zone zone, Barometer.Environment environment)
+    {
+        switch (environment) {
+            case INSIDE: {
+                return (zone.getId() >= 0 && zone.getId() < 9);
+            }
+
+            case STAIRS: {
+                return (zone.getId() == 9);
+            }
+
+            case OUTSIDE: {
+                return (zone.getId() > 9 && zone.getId() <= 13);
+            }
+        }
+
+        // Should never arrive here
+        return false;
+    }
+
     // Update particle positions based on an observation
-    public static ArrayList<Particle> resample (boolean ambient_light_ready,
-                                                AmbientLight.Environment env,
+    public static ArrayList<Particle> resample (boolean ambient_light_ready, boolean barometer_ready, Barometer.Environment baro_env,
+                                                AmbientLight.Environment light_env,
                                                 double spawn_noise_radius,
                                                 ArrayList<Particle> priors,
                                                 ArrayList<Zone> zones)
@@ -157,13 +178,19 @@ public class Particle {
                 if (ambient_light_ready == true) {
 
                     // If particle environment doesn't match then decrease by .25
-                    if (Particle.zoneInEnvironment(z, env) == false) {
+                    if (Particle.zoneInEnvironment(z, light_env) == false) {
                         obs = Math.max(obs - 0.25, 0.0);
                     }
                 }
 
-                // If using barometer
-                // Todo ...
+                // If using ambient light
+                if (barometer_ready == true) {
+
+                    // If particle environment doesn't match then decrease by .25
+                    if (Particle.zoneInEnvironment(z, baro_env) == false) {
+                        obs = Math.max(obs - 0.25, 0.0);
+                    }
+                }
             }
             p.setWeight(p.getWeight() * obs);
             normalization_constant += p.getWeight();

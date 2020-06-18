@@ -1,6 +1,9 @@
 package com.example.lieu;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -50,11 +53,23 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
     // Textview: Displays average for outside
     TextView textview_average_outside;
 
+    // Textview: Displays average pressure upstairs
+    TextView textview_average_upstairs;
+
+    // Textview: Displays avg. pressure downstairs
+    TextView textview_average_downstairs;
+
+    // Textview: Displays current pressure value
+    TextView textview_current_barometer;
+
     // Spinner: Environment for light
     Spinner spinner_light_environment;
 
     // Sample: Light (lux)
     float global_light_sample;
+
+    // Sample: Barometer (mbar)
+    float barometer_sample;
 
 
     // Button: Sample for the light sensor
@@ -66,11 +81,18 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
     // Button: Clear
     Button button_clear;
 
+    // Buttons: training
+    Button button_train_downstairs;
+    Button button_train_upstairs;
+
     // Currently selected light environment
     AmbientLight.Environment global_light_environment = AmbientLight.Environment.INSIDE;
 
     // String displayed in light result textview
     AmbientLight.Environment global_test_result = AmbientLight.Environment.NONE;
+
+    // String displayed in barometer textview
+    Barometer.Environment global_test_result_barometer = Barometer.Environment.NONE;
 
     @Nullable
     @Override
@@ -95,6 +117,11 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
         this.textview_average_outside = getView().findViewById(R.id.textview_average_outside);
 
 
+        this.textview_average_upstairs = getView().findViewById(R.id.textview_average_upstairs);
+        this.textview_average_downstairs = getView().findViewById(R.id.textview_average_downstairs);
+        this.textview_current_barometer = getView().findViewById(R.id.textview_current_barometer);
+
+
         // Configure the spinner
         this.spinner_light_environment = getView().findViewById(R.id.spinner_light_environment);
         ArrayAdapter<CharSequence> spinner_light_adapter = ArrayAdapter.createFromResource(getContext(),
@@ -115,6 +142,12 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
         this.button_clear = getView().findViewById(R.id.button_clear);
         this.button_clear.setOnClickListener(this);
 
+        this.button_train_downstairs = getView().findViewById(R.id.button_train_downstairs);
+        this.button_train_downstairs.setOnClickListener(this);
+
+        this.button_train_upstairs = getView().findViewById(R.id.button_train_upstairs);
+        this.button_train_upstairs.setOnClickListener(this);
+
         // Only enable the test button if enough samples have been collected
         updateUIState();
     }
@@ -122,9 +155,28 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
     @Override
     public void onClick(View v) {
         final AmbientLight ambientLight = DataManager.getInstance().getAmbientLight();
+        final Barometer barometerValues = DataManager.getInstance().getBarometer();
 
         // Add a new sample
         switch (v.getId()) {
+
+            // Button pressed to collect samples on lower elevation
+            case R.id.button_train_downstairs: {
+
+                // Reset result information
+                global_test_result_barometer = Barometer.Environment.OUTSIDE;
+                barometerValues.add_sample(barometer_sample, global_test_result_barometer);
+            }
+            break;
+
+            // Button pressed to collect samples on higher elevation
+            case R.id.button_train_upstairs: {
+
+                // Set result information
+                global_test_result_barometer = Barometer.Environment.INSIDE;
+                barometerValues.add_sample(barometer_sample, global_test_result_barometer);
+            }
+            break;
 
             // Button pressed to collect ambient light sample
             case R.id.button_sample_light_sensor: {
@@ -149,9 +201,16 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
                 // Clear the ambient light information
                 ambientLight.clear_samples(global_light_environment);
 
+
+                // Clear the barometer information
+                barometerValues.clear_samples(Barometer.Environment.OUTSIDE);
+
                 // Reset result information
                 global_test_result = AmbientLight.Environment.NONE;
             }
+            break;
+
+
         }
 
         // Update the interface
@@ -207,8 +266,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
             break;
 
             case Sensor.TYPE_PRESSURE: {
-                // Todo: Update barometer global value
-
+                this.barometer_sample = event.values[0];
             }
             break;
         }
@@ -221,7 +279,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
                         String.format("%.1flx", global_light_sample)
                 );
 
-                // Todo: Barometer sensor value
+                SensorFragment.this.textview_current_barometer.setText(String.format("%.1f", barometer_sample));
             }
         });
     }
@@ -269,6 +327,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
     public void updateUIState ()
     {
         final AmbientLight ambientLight = DataManager.getInstance().getAmbientLight();
+        final Barometer barometerPressure = DataManager.getInstance().getBarometer();
 
         // Disable the button if sufficient samples for current environment
         if (ambientLight.get_sample_count(global_light_environment) >= AmbientLight.required_sample_count) {
@@ -288,6 +347,12 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
         textview_average_stairs.setText(String.format("%.1f", ambientLight.get_average(AmbientLight.Environment.STAIRS)));
         textview_average_outside.setText(String.format("%.1f", ambientLight.get_average(AmbientLight.Environment.OUTSIDE)));
 
+        //averages barometer
+        textview_average_upstairs.setText(String.format("%.1f", barometerPressure.get_average(Barometer.Environment.INSIDE)));
+        textview_average_downstairs.setText(String.format("%.1f", barometerPressure.get_average(Barometer.Environment.OUTSIDE)));
+
+        textview_current_barometer.setText(String.format("%.1f", barometer_sample));
+
         // Update sample counters
         getActivity().runOnUiThread(new Runnable(){
             public void run() {
@@ -298,7 +363,23 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
                                 AmbientLight.required_sample_count)
                 );
 
-                // Todo: Barometer sample count
+                if(barometerPressure.get_sample_count(Barometer.Environment.INSIDE) < barometerPressure.required_sample_count)
+                {
+                    textview_average_upstairs.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                }
+                else
+                {
+                    textview_average_upstairs.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                }
+
+                if(barometerPressure.get_sample_count(Barometer.Environment.OUTSIDE) < barometerPressure.required_sample_count)
+                {
+                    textview_average_downstairs.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                }
+                else
+                {
+                    textview_average_downstairs.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+                }
             }
         });
     }

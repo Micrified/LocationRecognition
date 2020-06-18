@@ -222,9 +222,98 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"/>
         </LinearLayout>
+
+
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_marginVertical="20dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="3">
 
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.25"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textview_average_upstairs"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="55"
+                android:textAlignment="center"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                android:textColor="@color/colorLimeGreen"/>
+
+            <Button
+                android:id="@+id/button_train_upstairs"
+                android:text="Train Upstairs"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:textSize="14dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textview_current_barometer"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="55"
+                android:textAlignment="center"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                android:textColor="@color/colorLimeGreen"/>
+
+            <TextView
+                android:text="Current Pressure"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:textSize="14dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.25"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textview_average_downstairs"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="55"
+                android:textAlignment="center"
+                android:textSize="30dp"
+                android:textStyle="bold"
+                android:textColor="@color/colorLimeGreen"/>
+
+            <Button
+                android:id="@+id/button_train_downstairs"
+                android:text="Train Downstairs"
+                android:textStyle="bold"
+                android:textAlignment="center"
+                android:textSize="14dp"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+
+
+    </LinearLayout>
 
 </LinearLayout>
 </ScrollView>

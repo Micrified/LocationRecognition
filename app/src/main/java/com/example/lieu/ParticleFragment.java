@@ -146,6 +146,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     // Boolean indicating if light information is available
     private boolean ambient_light_ready = false;
 
+    // Boolean indicating if light information is available
+    private boolean barometer_ready = false;
+
+    // The current ambient light value
+    Barometer.Environment global_barometer_environment = Barometer.Environment.NONE;
+
 
     /*
      *******************************************************************************
@@ -519,7 +525,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
         // Resample particles
         double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
-        g_particles = Particle.resample(ambient_light_ready, global_ambient_light_environment,
+        g_particles = Particle.resample(ambient_light_ready, barometer_ready, global_barometer_environment, global_ambient_light_environment,
                 spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
@@ -670,6 +676,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             case Sensor.TYPE_PRESSURE: {
                 this.lock.lock();
                 global_barometer_value = sensorEvent.values[0];
+
+                global_barometer_environment = DataManager.getInstance().
+                        getBarometer().getMatchingEnvironment(sensorEvent.values[0]);
                 this.lock.unlock();
             }
             break;
@@ -710,7 +719,15 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         this.ambient_light_ready =
                 DataManager.getInstance().getAmbientLight().hasAtLeastNSamples(AmbientLight.required_sample_count);
 
+
+        // Update whether light information is available
+        this.barometer_ready =
+                DataManager.getInstance().getBarometer().hasAtLeastNSamples(Barometer.required_sample_count);
+
         Log.e("Update", "Ambient light enabled: " + ambient_light_ready);
+
+
+        Log.e("Update", "Barometer enabled: " + barometer_ready);
 
         // Acquire the accelerometer sensor
         this.accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);

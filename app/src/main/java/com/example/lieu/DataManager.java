@@ -49,6 +49,9 @@ public class DataManager implements Serializable {
     // Ambient light value tracker
     private AmbientLight ambientLight;
 
+    // Barometer data structure
+    private Barometer barometer;
+
     // The adjustment component for particle filter
     private double particle_adjustment_component = -0.05f;
 
@@ -362,5 +365,15 @@ public class DataManager implements Serializable {
         }
 
         return this.ambientLight;
+    }
+
+    // Gets the barometer data structure. If not initialized - the value is initialized
+    public Barometer getBarometer ()
+    {
+        if (this.barometer == null) {
+            this.barometer = new Barometer();
+        }
+
+        return this.barometer;
     }
 }

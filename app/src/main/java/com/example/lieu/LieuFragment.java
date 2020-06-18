@@ -241,7 +241,7 @@ public class LieuFragment extends Fragment implements View.OnClickListener, Scan
                 public void run ()
                 {
                     System.out.println("Steps: " + steps);
-                    stepsTextView.setText("Steps: " + steps + " Distance: " + steps*(((float) MainActivity.height/100)*0.413f));
+                    stepsTextView.setText("Steps: " + steps + " Distance: " + steps*(((float) MainActivity.height/100)*0.415f));
                 }
             });
         }
