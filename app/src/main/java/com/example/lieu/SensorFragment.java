@@ -204,6 +204,7 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
 
                 // Clear the barometer information
                 barometerValues.clear_samples(Barometer.Environment.OUTSIDE);
+                barometerValues.clear_samples(Barometer.Environment.INSIDE);
 
                 // Reset result information
                 global_test_result = AmbientLight.Environment.NONE;
