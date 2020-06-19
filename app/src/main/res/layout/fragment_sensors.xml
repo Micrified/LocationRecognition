@@ -252,9 +252,9 @@
                 android:id="@+id/textview_average_upstairs"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="55"
+                android:text="1000.00"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="25dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
@@ -278,9 +278,9 @@
                 android:id="@+id/textview_current_barometer"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="55"
+                android:text="1000.00"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="25dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
@@ -303,9 +303,9 @@
                 android:id="@+id/textview_average_downstairs"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:text="55"
+                android:text="1000.00"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="25dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
