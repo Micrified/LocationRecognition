@@ -55,6 +55,9 @@ public class DataManager implements Serializable {
     // The adjustment component for particle filter
     private double particle_adjustment_component = -0.05f;
 
+    // The user height
+    private int user_height = 170;
+
     public int getCellCount () {
         return this.cellCount;
     }
@@ -375,5 +378,13 @@ public class DataManager implements Serializable {
         }
 
         return this.barometer;
+    }
+
+    public int getUser_height() {
+        return user_height;
+    }
+
+    public void setUser_height(int user_height) {
+        this.user_height = user_height;
     }
 }

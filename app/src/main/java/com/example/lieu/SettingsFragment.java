@@ -152,6 +152,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
         // Set the version adjustment
         this.adjust_training_version(0);
 
+        // Set the user height to default to me
+        heightText.setText("170");
     }
 
     // Adjusts the global particle adjustment factor for stepping
@@ -179,7 +181,8 @@ public class SettingsFragment extends Fragment implements View.OnClickListener, 
 
     private void saveHeight()
     {
-        MainActivity.height = Integer.parseInt(heightText.getText().toString());
+        DataManager d = DataManager.getInstance();
+         d.setUser_height(Integer.parseInt(heightText.getText().toString()));
     }
 
     @Override

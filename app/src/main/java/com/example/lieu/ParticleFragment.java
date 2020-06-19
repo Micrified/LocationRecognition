@@ -633,6 +633,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     @Override
     public void onSensorChanged (SensorEvent sensorEvent) {
 
+        // Averaging buffer for the ambient light
+        float[] ambient_light_ring_buffer = new float[8];
+
         switch(sensorEvent.sensor.getType()) {
 
             // Magnetometer
@@ -685,9 +688,27 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
             // Ambient light
             case Sensor.TYPE_LIGHT: {
+
+                // Update the ring buffer
+                ambient_light_ring_buffer[0] = ambient_light_ring_buffer[1];
+                ambient_light_ring_buffer[1] = ambient_light_ring_buffer[2];
+                ambient_light_ring_buffer[2] = ambient_light_ring_buffer[3];
+                ambient_light_ring_buffer[3] = ambient_light_ring_buffer[4];
+                ambient_light_ring_buffer[4] = ambient_light_ring_buffer[5];
+                ambient_light_ring_buffer[5] = ambient_light_ring_buffer[6];
+                ambient_light_ring_buffer[6] = sensorEvent.values[0];
+
+                // Compute the new average
+                float average_ambient_light_buffer = 0.0f;
+                for (int i = 0; i < ambient_light_ring_buffer.length; ++i) {
+                    average_ambient_light_buffer += ambient_light_ring_buffer[i];
+                }
+                average_ambient_light_buffer /= 8;
+
+
                 this.lock.lock();
                 global_ambient_light_environment = DataManager.getInstance().
-                        getAmbientLight().getMatchingEnvironment(sensorEvent.values[0]);
+                        getAmbientLight().getMatchingEnvironment(average_ambient_light_buffer);
 
                 // Adjust step distance for stairs if ambient light enabled
                 if (ambient_light_ready) {
@@ -710,10 +731,21 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
     }
 
+    private int heightInCMToStepDistanceInPixels (int height_cm)
+    {
+        return (int) Math.ceil(height_cm * 0.415f * 1.4f);
+    }
+
     // Handler for resuming application context
     @Override
     public void onResume() {
         super.onResume();
+
+        // Extract user height (may have been updated)
+        int user_height = DataManager.getInstance().getUser_height();
+
+        // Update the step distance knowing that: 1.4px per cm
+        g_step_distance_pixels = heightInCMToStepDistanceInPixels(user_height);
 
         // Update whether light information is available
         this.ambient_light_ready =
