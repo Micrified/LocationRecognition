@@ -507,7 +507,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     public void updateCompass () {
         double angle = global_angle_degrees - global_angle_correction;
         int compass_angle = ((int)angle + 360) % 360;
-        this.compassImageView.setRotation(toNearestFortyFive360(compass_angle));
+        this.compassImageView.setRotation(toNearestN(compass_angle, 15));
         this.statusTextView.setText(String.format("%3.0f°", angle));
     }
 
@@ -520,7 +520,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // Move all particles
-        double angle_corrected = toNearestFortyFive360(global_angle_degrees - global_angle_correction);
+        double angle_corrected = toNearestN(global_angle_degrees - global_angle_correction, 15);
         double compass_angle = (double)(((int)angle_corrected + 360) % 360);
         double movement_noise_max = 0.5 * (double)g_step_distance_pixels_normal;
         double movement_noise = (movement_noise_max * Math.random()) - (movement_noise_max / 2);
@@ -590,12 +590,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
      */
 
     // Returns the 90 degree angle division
-    private static float toNearestFortyFive360 (float angle) {
-        int angle_rounded = (int)Math.round(angle);
-        int major = angle_rounded / 90; // Either zero, one, two, or three
-        int minor = (angle_rounded % 90) / 45; // Either zero (minor) or one (major)
-
-        return (float)(major * 90) + (float)(minor * 45);
+    private static float toNearestN (float angle, float n) {
+        return Math.round(angle / n) * n;
     }
 
 
