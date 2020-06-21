@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -132,10 +133,16 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     private ArrayList<Particle> g_particles;
 
     // The number of particles used
-    private int g_particle_count = 500;
+    private int g_particle_count = 450;
 
-    // Step distance in pixels
-    int g_step_distance_pixels = 102;
+    // Step distance (current)
+    int g_step_distance_pixels;
+
+    // Step distance (normal) in pixels
+    int g_step_distance_pixels_normal = heightInCMToStepDistanceInPixels(170);
+
+    // Step distance (stairs) in pixels
+    int g_step_distance_pixels_stairs = (int)(25.0f * 1.4f);
 
     // Convergence-particle
     private Particle convergence_particle = null;
@@ -219,6 +226,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         // Setup the step detector
         this.simpleStepDetector = new SimpleStepDetector();
         simpleStepDetector.registerListener(this);
+
+        // Extract user height
+        int user_height = DataManager.getInstance().getUser_height();
+
+        // The current step distance
+        g_step_distance_pixels = g_step_distance_pixels_normal;
 
         // Run the updater
         this.initRefreshTimer(50);
@@ -509,7 +522,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         // Move all particles
         double angle_corrected = global_angle_degrees - global_angle_correction;
         double compass_angle = (double)(((int)angle_corrected + 360) % 360);
-        double movement_noise_max = 0.5 * (double)g_step_distance_pixels;
+        double movement_noise_max = 0.5 * (double)g_step_distance_pixels_normal;
         double movement_noise = (movement_noise_max * Math.random()) - (movement_noise_max / 2);
 
         for (Particle p : g_particles) {
@@ -524,8 +537,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // Resample particles
-        double spawn_noise_radius = (double)((g_step_distance_pixels * 2) / 3);
-        g_particles = Particle.resample(ambient_light_ready, barometer_ready, global_barometer_environment, global_ambient_light_environment,
+        double spawn_noise_radius = (double)((g_step_distance_pixels_normal * 2) / 3);
+        g_particles = Particle.resample(false, false, global_barometer_environment, global_ambient_light_environment,
                 spawn_noise_radius, g_particles, g_zones);
 
         // Check if we ran out of particles
@@ -714,9 +727,9 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
                 if (ambient_light_ready) {
                     if (global_ambient_light_environment == AmbientLight.Environment.STAIRS) {
                         // 25.0 cm roughly for 9inches * 1.4 pixels per cm
-                        g_step_distance_pixels = (int)(25.0f * 1.4f);
+                        g_step_distance_pixels = g_step_distance_pixels_stairs;
                     } else {
-                        g_step_distance_pixels = 102;
+                        g_step_distance_pixels = g_step_distance_pixels_normal;
                     }
                 }
                 this.lock.unlock();
@@ -731,9 +744,20 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
 
     }
 
-    private int heightInCMToStepDistanceInPixels (int height_cm)
+    private static int heightInCMToStepDistanceInPixels (int height_cm)
     {
         return (int) Math.ceil(height_cm * 0.415f * 1.4f);
+    }
+
+    // Display a temporary message acknowledging an action
+    public void displayActionSnackbar (String msg)
+    {
+        Snackbar s = Snackbar.make(getView().findViewById(R.id.content_layout), msg, Snackbar.LENGTH_SHORT);
+        View bg = s.getView();
+        bg.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorYellow));
+        TextView fg = bg.findViewById(R.id.snackbar_text);
+        fg.setTextColor(ContextCompat.getColor(getContext(), R.color.colorCeramic));
+        s.show();
     }
 
     // Handler for resuming application context
@@ -745,7 +769,10 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         int user_height = DataManager.getInstance().getUser_height();
 
         // Update the step distance knowing that: 1.4px per cm
-        g_step_distance_pixels = heightInCMToStepDistanceInPixels(user_height);
+        g_step_distance_pixels_normal = heightInCMToStepDistanceInPixels(user_height);
+
+        // Show the current step distance in pixels
+        displayActionSnackbar("Height: " + user_height + "cm => " + g_step_distance_pixels_normal + "px");
 
         // Update whether light information is available
         this.ambient_light_ready =

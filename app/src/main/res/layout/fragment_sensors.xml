@@ -160,12 +160,12 @@
                 android:layout_height="wrap_content"
                 android:text="55"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="10dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
             <TextView
-                android:text="Avg. Inside"
+                android:text="Rng. Inside"
                 android:textStyle="bold"
                 android:textAlignment="center"
                 android:textSize="14dp"
@@ -185,12 +185,12 @@
                 android:layout_height="wrap_content"
                 android:text="55"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="10dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
             <TextView
-                android:text="Avg. Stairs"
+                android:text="Rng. Stairs"
                 android:textStyle="bold"
                 android:textAlignment="center"
                 android:textSize="14dp"
@@ -210,12 +210,12 @@
                 android:layout_height="wrap_content"
                 android:text="55"
                 android:textAlignment="center"
-                android:textSize="30dp"
+                android:textSize="10dp"
                 android:textStyle="bold"
                 android:textColor="@color/colorLimeGreen"/>
 
             <TextView
-                android:text="Avg. Outside"
+                android:text="Rng. Outside"
                 android:textStyle="bold"
                 android:textAlignment="center"
                 android:textSize="14dp"

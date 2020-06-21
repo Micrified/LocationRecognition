@@ -16,10 +16,24 @@ public class AmbientLight {
         OUTSIDE
     }
 
+    // Class: Range
+    public class Range {
+        public float max = Float.NaN;
+        public float min = Float.NaN;
+        public Range (float max, float min) {
+            this.max = max;
+            this.min = min;
+        }
+
+        public boolean contains (float value) {
+            return (value >= this.min && value <= this.max);
+        }
+    }
+
     // Averages: Lux per environment
-    private Float average_stairs  = Float.NaN;
-    private Float average_outside = Float.NaN;
-    private Float average_inside  = Float.NaN;
+    private Range inside_range;
+    private Range stairs_range;
+    private Range outside_range;
 
     // Samples: Per environment
     private ArrayList<Float> samples_stairs;
@@ -33,27 +47,32 @@ public class AmbientLight {
         this.samples_stairs = new ArrayList<Float>();
         this.samples_outside = new ArrayList<Float>();
         this.samples_inside = new ArrayList<Float>();
+
+        // Initialize ranges
+        this.inside_range = new Range((float)-1E5, (float)1E5);
+        this.stairs_range = new Range((float)-1E5, (float)1E5);
+        this.outside_range = new Range((float)-1E5, (float)1E5);
     }
 
     // Return the average value for a given environment
-    public float get_average (Environment environment)
+    public Range get_range (Environment environment)
     {
         // If the average is already computed then it doesn't need to be recomputed
         switch (environment) {
             case INSIDE: {
-                return average_inside;
+                return inside_range;
             }
 
             case STAIRS: {
-                return average_stairs;
+                return stairs_range;
             }
 
             case OUTSIDE: {
-                return average_outside;
+                return outside_range;
             }
         }
 
-        return Float.NaN;
+        return null;
     }
 
     // Returns the sample count for a given environment
@@ -86,32 +105,23 @@ public class AmbientLight {
     // Add a sample for the given environment
     public void add_sample (float value, Environment environment)
     {
-        float new_average = 0.0f;
+        Range r = null;
         switch (environment) {
             case INSIDE: {
+                r = inside_range;
                 this.samples_inside.add(value);
-                for (Float f : this.samples_inside) {
-                    new_average += f.floatValue();
-                }
-                this.average_inside = (new_average / (float)this.samples_inside.size());
             }
             break;
 
             case STAIRS: {
+                r = stairs_range;
                 this.samples_stairs.add(value);
-                for (Float f : this.samples_stairs) {
-                    new_average += f.floatValue();
-                }
-                this.average_stairs = (new_average / (float)this.samples_stairs.size());
             }
             break;
 
             case OUTSIDE: {
+                r = outside_range;
                 this.samples_outside.add(value);
-                for (Float f : this.samples_outside) {
-                    new_average += f.floatValue();
-                }
-                this.average_outside = (new_average / (float)this.samples_outside.size());
             }
             break;
 
@@ -120,6 +130,9 @@ public class AmbientLight {
                 return;
             }
         }
+
+        r.max = Math.max(value, r.max);
+        r.min = Math.min(value, r.min);
     }
 
     // Clear all samples for the given environment
@@ -129,19 +142,19 @@ public class AmbientLight {
 
             case INSIDE: {
                 this.samples_inside.clear();
-                this.average_inside = Float.NaN;
+                this.inside_range = new Range((float)-1E5, (float)1E5);
             }
             break;
 
             case STAIRS: {
                 this.samples_stairs.clear();
-                this.average_stairs = Float.NaN;
+                this.stairs_range = new Range((float)-1E5, (float)1E5);
             }
             break;
 
             case OUTSIDE: {
                 this.samples_outside.clear();
-                this.average_outside = Float.NaN;
+                this.outside_range = new Range((float)-1E5, (float)1E5);
             }
             break;
         }
@@ -159,23 +172,26 @@ public class AmbientLight {
     // Returns the class most like the given sample
     public Environment getMatchingEnvironment (float sample)
     {
+        int ranges_in = 0;
+        Environment e = Environment.NONE;
 
         // Return none if no data is available for any category
         if (samples_stairs.size() == 0 || samples_outside.size() == 0 || samples_inside.size() == 0) {
             return Environment.NONE;
         }
 
-        // Compute difference between measured value and the different categories
-        float diff_inside = (average_inside - sample) * (average_inside - sample);
-        float diff_stairs = (average_stairs - sample) * (average_stairs - sample);
-        float diff_outside = (average_outside - sample) * (average_outside - sample);
+        // Determine if in range
+        if (inside_range.contains(sample))  { e = Environment.INSIDE; ranges_in++; }
+        if (stairs_range.contains(sample))  { e = Environment.STAIRS; ranges_in++; }
+        if (outside_range.contains(sample)) { e = Environment.OUTSIDE; ranges_in++; }
 
-        // Return the best matching option
-        if (diff_inside < diff_stairs) {
-            return (diff_inside < diff_outside ? Environment.INSIDE : Environment.OUTSIDE);
-        } else {
-            return (diff_stairs < diff_outside ? Environment.STAIRS : Environment.OUTSIDE);
+        // Return none if in range more than one zone or no zones
+        if (ranges_in > 1 || ranges_in == 0) {
+            return Environment.NONE;
         }
+
+        // Return
+        return e;
     }
 
 }

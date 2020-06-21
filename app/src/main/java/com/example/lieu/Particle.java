@@ -144,7 +144,7 @@ public class Particle {
             }
         }
 
-        // Should never arrive here
+        // Undecided
         return false;
     }
 
@@ -179,7 +179,7 @@ public class Particle {
 
                     // If particle environment doesn't match then decrease by .25
                     if (Particle.zoneInEnvironment(z, light_env) == false) {
-                        obs = Math.max(obs - 0.25, 0.0);
+                        obs = Math.max(obs - 0.10, 0.0);
                     }
                 }
 
@@ -188,7 +188,7 @@ public class Particle {
 
                     // If particle environment doesn't match then decrease by .25
                     if (Particle.zoneInEnvironment(z, baro_env) == false) {
-                        obs = Math.max(obs - 0.25, 0.0);
+                        obs = Math.max(obs - 0.10, 0.0);
                     }
                 }
             }

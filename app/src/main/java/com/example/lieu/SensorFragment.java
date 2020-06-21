@@ -343,10 +343,14 @@ public class SensorFragment extends Fragment implements View.OnClickListener, Se
         // Update the result text
         textview_light_test_result.setText("" + global_test_result);
 
-        // Update the averages
-        textview_average_inside.setText(String.format("%.1f", ambientLight.get_average(AmbientLight.Environment.INSIDE)));
-        textview_average_stairs.setText(String.format("%.1f", ambientLight.get_average(AmbientLight.Environment.STAIRS)));
-        textview_average_outside.setText(String.format("%.1f", ambientLight.get_average(AmbientLight.Environment.OUTSIDE)));
+        // Update the ranges
+        AmbientLight.Range inside_range = ambientLight.get_range(AmbientLight.Environment.INSIDE);
+        AmbientLight.Range stairs_range = ambientLight.get_range(AmbientLight.Environment.STAIRS);
+        AmbientLight.Range outside_range = ambientLight.get_range(AmbientLight.Environment.OUTSIDE);
+
+        textview_average_inside.setText(String.format("%.1f-%.1f", inside_range.min, inside_range.max));
+        textview_average_stairs.setText(String.format("%.1f-%.1f", stairs_range.min, stairs_range.max));
+        textview_average_outside.setText(String.format("%.1f-%.1f", outside_range.min, outside_range.max));
 
         //averages barometer
         textview_average_upstairs.setText(String.format("%.2f", barometerPressure.get_average(Barometer.Environment.INSIDE)));
