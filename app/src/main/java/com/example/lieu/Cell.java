@@ -1,6 +1,7 @@
 package com.example.lieu;
 
 import android.net.wifi.ScanResult;
+import android.util.Log;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -283,6 +284,7 @@ public class Cell implements Serializable {
                     ap.addSamples(samples);
                 } else {
                     ap = new AccessPointResult(ssid, bssid, samples);
+                    Log.e("Cell " + getID(), "New entry for " + ssid + " (" + bssid + ")");
                     accessPointResultHashMap.put(bssid, ap);
                     this.accessPointResults.add(ap);
                 }

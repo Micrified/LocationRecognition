@@ -157,7 +157,8 @@ public class CellFragment extends Fragment implements View.OnClickListener, Swap
 
         // Update the displayed data
         AccessPointResult result = getCell().getAccessPointResults().get(data_index);
-        this.selectionTextView.setText(result.getBssid());
+        String fmt = String.format("%s(%s)", result.getSsid(), result.getBssid());
+        this.selectionTextView.setText(result.getSsid());
         this.refreshBarChart();
     }
 

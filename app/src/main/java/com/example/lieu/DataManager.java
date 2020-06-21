@@ -43,9 +43,6 @@ public class DataManager implements Serializable {
     // The cells
     private List<Cell> cells;
 
-    // Ambient light value for the stairs
-    private float ambient_light_average_stairs;
-
     // Ambient light value tracker
     private AmbientLight ambientLight;
 

@@ -258,18 +258,18 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
                         if (ParticleFragment.this.is_canvas_initialized) {
 
                             // Update rotation matrix, which is needed to update orientation angles.
-                            SensorManager.getRotationMatrix(rotationMatrix, null,
-                                    accelerometerReading, magnetometerReading);
-
-                            // Obtain the orientation angles
-                            SensorManager.getOrientation(rotationMatrix, orientationAngles);
-
-                            // Update the orientation
-                            float rate_yaw = orientationAngles[0];
-                            ParticleFragment.this.lock.lock();
-                            ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
-                            updateCompass();
-                            ParticleFragment.this.lock.unlock();
+//                            SensorManager.getRotationMatrix(rotationMatrix, null,
+//                                    accelerometerReading, magnetometerReading);
+//
+//                            // Obtain the orientation angles
+//                            SensorManager.getOrientation(rotationMatrix, orientationAngles);
+//
+//                            // Update the orientation
+//                            float rate_yaw = orientationAngles[0];
+//                            ParticleFragment.this.lock.lock();
+//                            ParticleFragment.this.global_angle_degrees = (float)Math.toDegrees(rate_yaw);
+//                            updateCompass();
+//                            ParticleFragment.this.lock.unlock();
 
                             // Update the zone
                             if (ambient_light_ready) {
@@ -507,7 +507,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
     public void updateCompass () {
         double angle = global_angle_degrees - global_angle_correction;
         int compass_angle = ((int)angle + 360) % 360;
-        this.compassImageView.setRotation(compass_angle);
+        this.compassImageView.setRotation(toNearestFortyFive360(compass_angle));
         this.statusTextView.setText(String.format("%3.0f°", angle));
     }
 
@@ -520,7 +520,7 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         }
 
         // Move all particles
-        double angle_corrected = global_angle_degrees - global_angle_correction;
+        double angle_corrected = toNearestFortyFive360(global_angle_degrees - global_angle_correction);
         double compass_angle = (double)(((int)angle_corrected + 360) % 360);
         double movement_noise_max = 0.5 * (double)g_step_distance_pixels_normal;
         double movement_noise = (movement_noise_max * Math.random()) - (movement_noise_max / 2);
@@ -590,17 +590,12 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
      */
 
     // Returns the 90 degree angle division
-    private float toNearestNinety360 (float angle) {
-        if ((angle >= 315 && angle < 360) || (angle >= 0 && angle < 45)) {
-            return 0;
-        }
-        if (angle >= 45 && angle < 135) {
-            return 90;
-        }
-        if (angle >= 135 && angle < 225) {
-            return 180;
-        }
-        return 270;
+    private static float toNearestFortyFive360 (float angle) {
+        int angle_rounded = (int)Math.round(angle);
+        int major = angle_rounded / 90; // Either zero, one, two, or three
+        int minor = (angle_rounded % 90) / 45; // Either zero (minor) or one (major)
+
+        return (float)(major * 90) + (float)(minor * 45);
     }
 
 
@@ -642,6 +637,8 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
      */
 
 
+    private static float last_timestamp;
+
     // [SYNC] Handler for change in sensors
     @Override
     public void onSensorChanged (SensorEvent sensorEvent) {
@@ -677,14 +674,15 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
             // Gyroscope-field update handler
             case Sensor.TYPE_GYROSCOPE:
                 //System.out.println(sensorEvent.timestamp - last_timestamp);
-//                float rate_yaw = sensorEvent.values[2];
-//                float period = (1.0f/200.0f);
-//                float dyaw = rate_yaw * period;
-//
-//                this.lock.lock();
-//                this.global_angle_degrees += Math.toDegrees(-dyaw);
-//                updateCompass();
-//                this.lock.unlock();
+                float rate_yaw = sensorEvent.values[2];
+                float period = (1.0f/200.0f);
+                float dyaw = rate_yaw * period;
+
+                this.lock.lock();
+                this.global_angle_degrees += Math.toDegrees(-dyaw);
+                updateCompass();
+                this.lock.unlock();
+
                 break;
 
 
@@ -749,17 +747,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         return (int) Math.ceil(height_cm * 0.415f * 1.4f);
     }
 
-    // Display a temporary message acknowledging an action
-    public void displayActionSnackbar (String msg)
-    {
-        Snackbar s = Snackbar.make(getView().findViewById(R.id.content_layout), msg, Snackbar.LENGTH_SHORT);
-        View bg = s.getView();
-        bg.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorYellow));
-        TextView fg = bg.findViewById(R.id.snackbar_text);
-        fg.setTextColor(ContextCompat.getColor(getContext(), R.color.colorCeramic));
-        s.show();
-    }
-
     // Handler for resuming application context
     @Override
     public void onResume() {
@@ -771,8 +758,6 @@ public class ParticleFragment extends Fragment implements View.OnClickListener, 
         // Update the step distance knowing that: 1.4px per cm
         g_step_distance_pixels_normal = heightInCMToStepDistanceInPixels(user_height);
 
-        // Show the current step distance in pixels
-        displayActionSnackbar("Height: " + user_height + "cm => " + g_step_distance_pixels_normal + "px");
 
         // Update whether light information is available
         this.ambient_light_ready =

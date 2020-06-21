@@ -40,9 +40,10 @@
             android:layout_gravity="center"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:text="Eduroam (5/5)"
+            android:textColor="@color/colorRedOrange"
+            android:text="Eduroam (5/5)\nabcd:efgh:ijkl:mnlo"
             android:textAlignment="center"
-            android:textSize="20dp" />
+            android:textSize="10dp" />
 
         <Button
             android:id="@+id/next_button"
